@@ -1,4 +1,4 @@
-# 🚀 Zoople Hackathon 2026
+# 🚀 Z-Hack 2k26
 
 Welcome to the official repository for your team's Zoople Hackathon project.
 
