@@ -12,7 +12,7 @@ You have been granted temporary access to this repository for the duration of th
 
 > **Important**
 >
-> Your GitLab repository access will automatically expire after the hackathon ends. After the expiry time, you will no longer be able to clone, pull, or push to this repository.
+> Your GitLab repository access will automatically expire after the hackathon ends (20/07/2026). After the expiry time, you will no longer be able to clone, pull, or push to this repository.
 
 ---
 
@@ -131,7 +131,7 @@ git push
 * This repository is assigned exclusively to your team.
 * Do not share repository access with anyone outside your team.
 * Commit your work regularly.
-* Push your latest changes before the submission deadline.
+* Push your latest changes before the submission deadline (20/07/2026).
 * Repository access will automatically expire after the hackathon.
 
 ---
@@ -194,7 +194,7 @@ Teams may be disqualified for:
 * Use of unauthorized materials
 * Violation of event rules
 * Misconduct
-* Failure to submit before the deadline
+* Failure to submit before the deadline (20/07/2026)
 
 ---
 
@@ -300,10 +300,9 @@ git log --oneline
 
 # 📅 Hackathon Reminder
 
-* Start development **only after the official hackathon begins**.
 * Commit your work frequently.
 * Push your code regularly to avoid losing progress.
-* Ensure your final code is pushed before the submission deadline.
+* Ensure your final code is pushed before the submission deadline (20/07/2026).
 * Your repository access will expire automatically after the hackathon concludes.
 
 Good luck, and happy coding! 🚀
