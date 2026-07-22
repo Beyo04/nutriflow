@@ -35,7 +35,7 @@ Click **Code** and copy either the **HTTPS** or **SSH** clone URL.
 ### Clone using HTTPS
 
 ```bash
-git clone https://gitlab.com/<username>/<repository-name>.git
+git clone https://gitlab.com/jijojohn911/NurtiFlow.git
 ```
 
 ### Clone using SSH (Recommended)
