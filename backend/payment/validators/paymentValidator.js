@@ -28,14 +28,8 @@ export const verifyValidator = Joi.object({
     'any.required': 'gatewayOrderId is required.',
     'string.empty': 'gatewayOrderId cannot be empty.',
   }),
-  gatewayPaymentId: Joi.string().required().messages({
-    'any.required': 'gatewayPaymentId is required.',
-    'string.empty': 'gatewayPaymentId cannot be empty.',
-  }),
-  gatewaySignature: Joi.string().required().messages({
-    'any.required': 'gatewaySignature is required.',
-    'string.empty': 'gatewaySignature cannot be empty.',
-  }),
+  gatewayPaymentId: Joi.string().optional(),
+  gatewaySignature: Joi.string().optional(),
   paymentMethod: Joi.string()
     .valid('UPI', 'Credit Card', 'Debit Card')
     .required()

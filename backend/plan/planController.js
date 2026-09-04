@@ -58,15 +58,22 @@ export const getWeeklyMenu = async (req, res) => {
       });
     }
 
-    // Calculate current week Monday
-    const d = new Date();
-    const dayOfWeek = d.getDay();
-    const diff = d.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(d.setDate(diff));
-    monday.setHours(0, 0, 0, 0);
+    // Find the most recent weekStartDate available for this goal/tier
+    const latest = await WeeklyMenu.findOne({ goal, tier }).sort({ weekStartDate: -1 });
+
+    if (!latest) {
+      return res.json({
+        success: true,
+        weekStartDate: null,
+        goal,
+        tier,
+        count: 0,
+        menu: [],
+      });
+    }
 
     const query = {
-      weekStartDate: monday,
+      weekStartDate: latest.weekStartDate,
       goal,
       tier,
     };
@@ -77,10 +84,10 @@ export const getWeeklyMenu = async (req, res) => {
 
     const records = await WeeklyMenu.find(query).populate('menuId');
 
-    if (!records || records.length === 0) {
+     if (!records || records.length === 0) {
       return res.json({
         success: true,
-        weekStartDate: monday.toISOString(),
+        weekStartDate: latest.weekStartDate.toISOString(),
         goal,
         tier,
         count: 0,
@@ -106,6 +113,7 @@ export const getWeeklyMenu = async (req, res) => {
         mealSlot: record.mealSlot,
         isChefSpecial: record.isChefSpecial,
         dish: {
+          _id: menuObj._id,
           menuId: menuObj.menuId,
           name: menuObj.name,
           description: menuObj.description,
@@ -126,7 +134,7 @@ export const getWeeklyMenu = async (req, res) => {
 
     return res.json({
       success: true,
-      weekStartDate: monday.toISOString(),
+      weekStartDate: latest.weekStartDate.toISOString(),
       goal,
       tier,
       count: mappedMenu.length,

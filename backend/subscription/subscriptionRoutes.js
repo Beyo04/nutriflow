@@ -67,9 +67,10 @@ router.get('/pauseable-days', protect, validate(getPauseableDaysValidator), getP
 router.post('/pause-meal', protect, validate(pauseMealValidator), pauseMeal);
 router.post('/resume-meal', protect, validate(resumeMealValidator), resumeMeal);
 
-router.get('/pauses/status', protect, validate(getPauseStatusValidator), getPauseStatus);
-router.post('/pauses', protect, validate(quickPauseMealValidator), quickPauseMeal);
-router.post('/pauses/resume', protect, validate(quickResumeMealValidator), quickResumeMeal);
+// Primary pause routes — use proper service functions that accept subscriptionId
+router.get('/pauses/status', protect, validate(getPauseableDaysValidator), getPauseableDays);
+router.post('/pauses', protect, validate(pauseMealValidator), pauseMeal);
+router.post('/pauses/resume', protect, validate(resumeMealValidator), resumeMeal);
 
 // Admin Routes
 

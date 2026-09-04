@@ -7,12 +7,12 @@ import Testimonials from '../components/Testimonials'
 import Faq from '../components/Faq'
 import ContactUs from './ContactUs'
 
-const Home = ({ setActiveTab }) => {
+const Home = ({ setActiveTab, onOpenOTP }) => {
   return (
     <main>
       <Hero />
       <HowItWorks />
-      <HomePlan />
+      <HomePlan setActiveTab={setActiveTab} onOpenOTP={onOpenOTP} />
       <Testimonials />
       <ContactUs/>
       <Faq />

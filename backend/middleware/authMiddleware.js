@@ -13,7 +13,7 @@ export const protect = async (req, res, next) => {
             token = req.headers.authorization.split(' ')[1];
 
             // Verify token
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nutriflow_jwt_secret_key_12345');
 
             // Get user from the token (Exclude password hash for security)
             req.user = await User.findById(decoded.id).select('-password');

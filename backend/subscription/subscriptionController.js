@@ -139,20 +139,9 @@ async function getPauseStatus(req, res, next) {
       return res.status(400).json({ success: false, message: 'Only Premium subscriptions support pausing meals.' });
     }
 
-    const now = new Date();
-    const currentWeekStart = getISOWeekStart(now);
-    const currentWeekEnd = new Date(currentWeekStart);
-    currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
-    currentWeekEnd.setHours(23, 59, 59, 999);
 
-    const currentWeekPauses = (subscription.pausedMeals || []).filter(pm =>
-      pm.status === 'pending' &&
-      new Date(pm.originalDate) >= currentWeekStart &&
-      new Date(pm.originalDate) <= currentWeekEnd
-    );
-
-    const usedPauses = currentWeekPauses.length;
-    const remainingPauses = Math.max(0, MAX_WEEKLY_PAUSES - usedPauses);
+    const pausesUsed = subscription.pauseCount || 0;
+    const remainingPauses = Math.max(0, 2 - pausesUsed);
 
     const pausedDates = (subscription.pausedMeals || [])
       .filter(pm => pm.status === 'pending')
@@ -165,11 +154,9 @@ async function getPauseStatus(req, res, next) {
         subscriptionStartDate: stripTime(subscription.startDate).toISOString().split('T')[0],
         subscriptionEndDate: stripTime(subscription.endDate).toISOString().split('T')[0],
         remainingPauses,
-        usedPauses,
-        weeklyPausesLimit: MAX_WEEKLY_PAUSES,
+        usedPauses: pausesUsed,
+        pausesLimit: 2,
         pausedDates,
-        weekStart: currentWeekStart.toISOString().split('T')[0],
-        weekEnd: currentWeekEnd.toISOString().split('T')[0],
       }
     });
   } catch (error) {
@@ -194,7 +181,7 @@ async function quickPauseMeal(req, res, next) {
 
     if (!finalRescheduledDate) {
       const startScan = new Date(pauseDate);
-      
+
       const pausedDates = (subscription.pausedMeals || [])
         .filter(pm => pm.status === 'pending')
         .map(pm => stripTime(pm.originalDate).getTime());
@@ -207,7 +194,7 @@ async function quickPauseMeal(req, res, next) {
         const scanDate = new Date(startScan);
         scanDate.setDate(startScan.getDate() + i);
         const scanTime = stripTime(scanDate).getTime();
-        
+
         if (!isDeliveryDay(scanDate)) continue;
         if (scanTime === stripTime(pauseDate).getTime()) continue;
         if (pausedDates.includes(scanTime) || rescheduledDates.includes(scanTime)) continue;

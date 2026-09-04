@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus, ShoppingCart } from 'lucide-react';
+import api, { dedupedGet, getAuthToken } from '../api';
 
 const DIETARY_TABS = ["All Plans", "High Protein", "Balanced Diet", "Weight Loss", "Weight Gain", "Diabetic Friendly"];
 
@@ -179,32 +179,54 @@ const OrderToday = ({ onOpenOTP, setActiveTab, cartItems, cartQuantities, addToC
   const [activeDietTab, setActiveDietTab] = useState("All Plans");
   const [menuItems, setMenuItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState(null); // { message, type }
+
+  const triggerToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  // Helper to check if string is valid 24-char hex MongoDB ObjectId
+  const isValidObjectId = (id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+
+  // True when we're showing hardcoded fallback data instead of live API data
+  const isFallback = menuItems.length > 0 && menuItems[0]?._id?.startsWith('m') && menuItems[0]._id.length < 5;
 
   // Fetch Menu from API / Fallback
   useEffect(() => {
+    const controller = new AbortController();
     const fetchMenu = async () => {
       setIsLoading(true);
       try {
-        const res = await axios.get('/nutriflow/menu?category=Breakfast');
-        if (res.data && res.data.data) {
-          // Verify we have active breakfast items
-          const items = res.data.data.filter(item => item.isAvailable);
+        const res = await dedupedGet('/menu', { signal: controller.signal, timeout: 10000 });
+        if (controller.signal.aborted) return;
+        if (res.data && res.data.data && Array.isArray(res.data.data)) {
+          const items = res.data.data.filter(item => item.isAvailable !== false);
           setMenuItems(items.length > 0 ? items : FALLBACK_ORDER_MENU);
         } else {
           setMenuItems(FALLBACK_ORDER_MENU);
         }
       } catch (err) {
+        if (controller.signal.aborted) return;
+        console.error('[OrderToday] Menu fetch failed:', err.response?.data || err.message || err);
         setMenuItems(FALLBACK_ORDER_MENU);
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
     fetchMenu();
+    return () => controller.abort();
   }, []);
 
   const handleAdd = (id) => {
+    if (!isValidObjectId(id)) {
+      triggerToast('Live menu unavailable — sample items cannot be added to cart. Please try again shortly.', 'error');
+      return;
+    }
     // Auth Guard check
-    const token = localStorage.getItem('nutriflow_token') || localStorage.getItem('token') || localStorage.getItem('auth_token');
+    const token = getAuthToken();
     if (!token) {
       onOpenOTP?.();
       return;
@@ -231,16 +253,13 @@ const OrderToday = ({ onOpenOTP, setActiveTab, cartItems, cartQuantities, addToC
 
   // Dynamic Image Resolver
   const getImage = (item) => {
-    // If item has a valid image path, use it directly
-    if (item.image && item.image.trim() !== '' && item.image !== '/breakfast_bowl.png') {
-      return item.image;
+    if (!item.image || item.image.trim() === '') return "/breakfast_bowl.png";
+    // Absolute URL (seeded as http://localhost:5173/...) → extract pathname only
+    if (item.image.startsWith('http://') || item.image.startsWith('https://')) {
+      try { return new URL(item.image).pathname; } catch { /* fall through */ }
     }
-    // Fallback for API items that might have image as just filename without slash
-    if (item.image && !item.image.startsWith('/')) {
-      return `/${item.image}`;
-    }
-    // Final fallback
-    return "/breakfast_bowl.png";
+    // Relative path — ensure leading slash
+    return item.image.startsWith('/') ? item.image : `/${item.image}`;
   };
 
   // View Cart Action: Add to Backend Cart or proceed to Checkout/Membership page
@@ -250,6 +269,27 @@ const OrderToday = ({ onOpenOTP, setActiveTab, cartItems, cartQuantities, addToC
 
   return (
     <div className="pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto z-10 relative font-dmsans">
+      {/* In-app Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key="order-toast"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.25 }}
+            className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-semibold ${
+              toast.type === 'error'
+                ? 'bg-red-50 border border-red-200 text-red-700'
+                : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+            }`}
+          >
+            <span>{toast.type === 'error' ? '⚠️' : '✓'}</span>
+            <span>{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="mb-8 space-y-4">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 font-sans">
@@ -279,6 +319,14 @@ const OrderToday = ({ onOpenOTP, setActiveTab, cartItems, cartQuantities, addToC
           );
         })}
       </div>
+
+      {/* Fallback Data Banner */}
+      {!isLoading && isFallback && (
+        <div className="mb-6 flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-sm font-medium">
+          <span className="text-lg">⚠️</span>
+          <span>Showing sample menu — live menu is temporarily unavailable. Items cannot be added to cart until the connection is restored.</span>
+        </div>
+      )}
 
       {/* Loading State */}
       {isLoading ? (
@@ -363,7 +411,8 @@ const OrderToday = ({ onOpenOTP, setActiveTab, cartItems, cartQuantities, addToC
                       /* Add Button */
                       <button
                         onClick={() => handleAdd(item._id)}
-                        className="w-9 h-9 rounded-full bg-[#EAF7EB] text-[#1F4D2C] flex items-center justify-center border border-[#1F4D2C]/20 hover:bg-[#1F4D2C] hover:text-white transition-all cursor-pointer"
+                        title={!isValidObjectId(item._id) ? "Offline sample item (cannot add to cart)" : "Add to Cart"}
+                        className="w-9 h-9 rounded-full flex items-center justify-center border transition-all cursor-pointer bg-[#EAF7EB] text-[#1F4D2C] border-[#1F4D2C]/20 hover:bg-[#1F4D2C] hover:text-white"
                       >
                         <Plus className="w-4 h-4" />
                       </button>

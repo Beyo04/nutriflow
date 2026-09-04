@@ -63,9 +63,8 @@ export default function OTPModal({ isOpen, onClose, onSuccess }) {
     }, 4000)
   }
 
-  // Detect prefers-reduced-motion
-  const prefersReducedMotion = typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // Always show animations regardless of OS reduced-motion setting
+  const prefersReducedMotion = false
 
   // Reset modal state when closed or opened afresh
   useEffect(() => {
@@ -376,69 +375,48 @@ export default function OTPModal({ isOpen, onClose, onSuccess }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.2 }}
             onClick={() => !isLoading && onClose?.()}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-0"
+            className="fixed inset-0 bg-slate-900/50 z-0"
             aria-hidden="true"
           />
 
           {/* Floating Anti-Gravity Container & Shadow */}
-          <div className="relative z-10 w-full max-w-[440px] perspective-1000">
-            {/* Card Shadow scaling with bobbing */}
-            {!prefersReducedMotion && (
-              <motion.div
-                animate={{ scale: [1, 0.85, 1], opacity: [0.25, 0.12, 0.25] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-4/5 h-6 bg-black/10 blur-xl rounded-[100%] mx-auto mb-[-12px] pointer-events-none"
-              />
-            )}
+          <div className="relative z-10 w-full max-w-[440px]">
+            {/* Card Shadow scaling with bobbing - hardware accelerated */}
+            <div
+              className="w-4/5 h-6 bg-black/15 blur-sm rounded-[100%] mx-auto mb-[-12px] pointer-events-none"
+            />
 
-            {/* Anti-Gravity Floating Card */}
+            {/* Entry/Exit wrapper */}
             <motion.div
-              initial={
-                prefersReducedMotion
-                  ? { opacity: 0, scale: 1 }
-                  : { y: 40, opacity: 0, scale: 0.92, rotateX: 4 }
-              }
-              animate={
-                prefersReducedMotion
-                  ? { opacity: 1, scale: 1 }
-                  : { y: [-6, -12, -6], opacity: 1, scale: 1, rotateX: 0 }
-              }
-              exit={{ y: 20, opacity: 0, scale: 0.95 }}
-              transition={
-                prefersReducedMotion
-                  ? { duration: 0.2 }
-                  : {
-                      y: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-                      opacity: { duration: 0.4 },
-                      scale: { duration: 0.4 },
-                      rotateX: { duration: 0.5 }
-                    }
-              }
-              className="relative bg-[#FAFBFF] text-slate-500 rounded-2xl border border-slate-200/80 shadow-[0_20px_50px_rgba(0,0,0,0.12)] p-6 sm:p-8 overflow-hidden dot-grid"
+              initial={{ opacity: 0, y: 25, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 15, scale: 0.97 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             >
-              {/* Background Noise Layer */}
-              <div className="fixed inset-0 noise-overlay opacity-[0.02] z-0 pointer-events-none" />
-
+              {/* Anti-Gravity Floating Card (fast smooth GPU bobbing) */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: 'easeInOut'
+                }}
+                className="relative bg-[#FAFBFF] text-slate-500 rounded-2xl border border-slate-200/80 shadow-2xl p-6 sm:p-8 overflow-hidden dot-grid transform-gpu"
+              >
               {/* Background Floating Orbs */}
               <div
-                className={`absolute top-[-10%] right-[-10%] w-[180px] h-[180px] rounded-full pointer-events-none ${
-                  prefersReducedMotion ? '' : 'animate-float-slow'
-                }`}
-                style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%)' }}
+                className="absolute top-[-10%] right-[-10%] w-[180px] h-[180px] rounded-full pointer-events-none opacity-60"
+                style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 70%)' }}
               />
               <div
-                className={`absolute top-[40%] left-[-15%] w-[160px] h-[160px] rounded-full pointer-events-none ${
-                  prefersReducedMotion ? '' : 'animate-float-fast'
-                }`}
-                style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%)' }}
+                className="absolute top-[40%] left-[-15%] w-[160px] h-[160px] rounded-full pointer-events-none opacity-60"
+                style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%)' }}
               />
               <div
-                className={`absolute bottom-[-10%] right-[10%] w-[200px] h-[200px] rounded-full pointer-events-none ${
-                  prefersReducedMotion ? '' : 'animate-float'
-                }`}
-                style={{ background: 'radial-gradient(circle, rgba(251,113,133,0.1) 0%, transparent 70%)' }}
+                className="absolute bottom-[-10%] right-[10%] w-[200px] h-[200px] rounded-full pointer-events-none opacity-60"
+                style={{ background: 'radial-gradient(circle, rgba(251,113,133,0.12) 0%, transparent 70%)' }}
               />
 
               {/* Close Modal Button */}
@@ -721,6 +699,7 @@ export default function OTPModal({ isOpen, onClose, onSuccess }) {
                   </motion.div>
                 )}
               </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>

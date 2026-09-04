@@ -709,6 +709,10 @@ export function stripTime(date) {
 }
 
 export async function getPauseableDaysService(userId, { subscriptionId }) {
+  console.log('[getPauseableDaysService] Debug Input:', { subscriptionId, userId, userIdType: typeof userId });
+  const rawSub = await Subscription.findById(subscriptionId).lean();
+  console.log('[getPauseableDaysService] Raw Sub Check:', rawSub ? { id: rawSub._id, user: rawSub.user, userType: typeof rawSub.user, status: rawSub.status } : 'NULL');
+
   const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, status: 'Active' })
     .populate('plan')
     .populate('mealSchedule.menuItem')
@@ -755,17 +759,20 @@ export async function getPauseableDaysService(userId, { subscriptionId }) {
 
     const canPause = now < deadline && !pendingPause;
 
+    // Generate next 3 delivery days after targetDate as reschedule options
     const rescheduleOptions = [];
-    const today = stripTime(new Date());
-    let scanDate = new Date(Math.max(subStart.getTime(), today.getTime()));
-    while (scanDate <= subEnd) {
-      if (isDeliveryDay(scanDate) && stripTime(scanDate).getTime() !== targetDate.getTime()) {
+    let scanDate = new Date(targetDate);
+    let rescheduleCount = 0;
+    while (rescheduleCount < 3) {
+      scanDate.setDate(scanDate.getDate() + 1);
+      if (stripTime(scanDate) > subEnd) break; // circuit breaker: no more delivery days within subscription
+      if (isDeliveryDay(scanDate) && stripTime(scanDate) <= subEnd) {
         rescheduleOptions.push({
           date: stripTime(scanDate).toISOString().split('T')[0],
           day: DAY_NAMES[scanDate.getDay()]
         });
+        rescheduleCount++;
       }
-      scanDate.setDate(scanDate.getDate() + 1);
     }
 
     pauseableDays.push({
@@ -791,29 +798,22 @@ export async function getPauseableDaysService(userId, { subscriptionId }) {
     });
   }
 
-  const currentWeekStart = getISOWeekStart(now);
-  const currentWeekEnd = new Date(currentWeekStart);
-  currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
-  currentWeekEnd.setHours(23, 59, 59, 999);
-
-  const currentWeekPauses = (subscription.pausedMeals || []).filter(pm =>
-    pm.status === 'pending' &&
-    new Date(pm.originalDate) >= currentWeekStart &&
-    new Date(pm.originalDate) <= currentWeekEnd
-  );
-
-  const weeklyPausesUsed = currentWeekPauses.length;
-  const canPauseThisWeek = weeklyPausesUsed < MAX_WEEKLY_PAUSES;
+  // Lifetime pause quota based on pauseCount field
+  const pausesUsed = subscription.pauseCount || 0;
 
   return {
     pauseableDays,
-    weeklyPausesUsed,
-    weeklyPausesLimit: MAX_WEEKLY_PAUSES,
-    canPauseThisWeek
+    pausesUsed,
+    pausesLimit: 2,
+    canPause: pausesUsed < 2
   };
 }
 
 export async function pauseMealService(userId, { subscriptionId, originalDate, rescheduledDate }) {
+  console.log('[pauseMealService] Debug Input:', { subscriptionId, userId, userIdType: typeof userId });
+  const rawSub = await Subscription.findById(subscriptionId).lean();
+  console.log('[pauseMealService] Raw Sub Check:', rawSub ? { id: rawSub._id, user: rawSub.user, userType: typeof rawSub.user, status: rawSub.status } : 'NULL');
+
   const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, status: 'Active' })
     .populate('plan')
     .populate('mealSchedule.menuItem')
@@ -827,19 +827,9 @@ export async function pauseMealService(userId, { subscriptionId, originalDate, r
     throw { statusCode: 400, message: 'Only Premium subscriptions support pausing meals.' };
   }
 
-  const weekStart = getISOWeekStart(originalDate);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  weekEnd.setHours(23, 59, 59, 999);
-
-  const pausesInWeek = (subscription.pausedMeals || []).filter(pm =>
-    pm.status === 'pending' &&
-    new Date(pm.originalDate) >= weekStart &&
-    new Date(pm.originalDate) <= weekEnd
-  );
-
-  if (pausesInWeek.length >= MAX_WEEKLY_PAUSES) {
-    throw { statusCode: 400, message: `Maximum of ${MAX_WEEKLY_PAUSES} pauses allowed per ISO week.` };
+  // Lifetime pause quota check (max 2 pauses per subscription lifetime)
+  if ((subscription.pauseCount || 0) >= 2) {
+    throw { statusCode: 403, message: 'Maximum 2 pauses reached for this subscription.' };
   }
 
   const now = new Date();
@@ -884,6 +874,22 @@ export async function pauseMealService(userId, { subscriptionId, originalDate, r
     throw { statusCode: 400, message: "Original date must be within the subscription's active date range." };
   }
 
+  // Validate rescheduledDate is within the next 3 delivery days after originalDate
+  const validRescheduleDates = [];
+  let scanDate = new Date(origDate);
+  while (validRescheduleDates.length < 3) {
+    scanDate.setDate(scanDate.getDate() + 1);
+    if (stripTime(scanDate) > subEnd) {
+      break; // Stop scanning if we go past subscription's end date
+    }
+    if (isDeliveryDay(scanDate)) {
+      validRescheduleDates.push(stripTime(scanDate).getTime());
+    }
+  }
+  if (!validRescheduleDates.includes(resDate.getTime())) {
+    throw { statusCode: 400, message: 'Rescheduled date must be within 3 delivery days after the paused date.' };
+  }
+
   const alreadyPaused = (subscription.pausedMeals || []).some(pm =>
     pm.status === 'pending' && stripTime(pm.originalDate).getTime() === origDate.getTime()
   );
@@ -917,18 +923,16 @@ export async function pauseMealService(userId, { subscriptionId, originalDate, r
     createdAt: new Date()
   };
 
+  // Push the new paused meal AND increment the lifetime pauseCount atomically
   await Subscription.updateOne(
     { _id: subscriptionId, user: userId, status: 'Active' },
-    { $push: { pausedMeals: newPausedMeal } }
+    {
+      $push: { pausedMeals: newPausedMeal },
+      $inc: { pauseCount: 1 }
+    }
   );
 
   const updatedSubscription = await Subscription.findOne({ _id: subscriptionId, user: userId }).lean();
-
-  const updatedPausesInWeek = (updatedSubscription.pausedMeals || []).filter(pm =>
-    pm.status === 'pending' &&
-    new Date(pm.originalDate) >= weekStart &&
-    new Date(pm.originalDate) <= weekEnd
-  );
 
   const pausedDetail = (updatedSubscription.pausedMeals || []).find(pm =>
     stripTime(pm.originalDate).getTime() === origDate.getTime()
@@ -936,8 +940,8 @@ export async function pauseMealService(userId, { subscriptionId, originalDate, r
 
   return {
     pausedMeal: pausedDetail,
-    weeklyPausesUsed: updatedPausesInWeek.length,
-    weeklyPausesLimit: MAX_WEEKLY_PAUSES
+    pausesUsed: updatedSubscription.pauseCount || 0,
+    pausesLimit: 2
   };
 }
 
@@ -965,6 +969,8 @@ export async function resumeMealService(userId, { subscriptionId, originalDate }
     throw { statusCode: 400, message: 'Cannot resume meal after the deadline (7:00 PM the day before delivery).' };
   }
 
+  // Remove the paused meal entry. NOTE: pauseCount is NOT decremented on resume —
+  // the lifetime quota is consumed permanently once used.
   await Subscription.updateOne(
     { _id: subscriptionId, user: userId },
     { $pull: { pausedMeals: { _id: pendingPause._id } } }
@@ -972,20 +978,9 @@ export async function resumeMealService(userId, { subscriptionId, originalDate }
 
   const updatedSubscription = await Subscription.findOne({ _id: subscriptionId, user: userId }).lean();
 
-  const weekStart = getISOWeekStart(originalDate);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  weekEnd.setHours(23, 59, 59, 999);
-
-  const updatedPausesInWeek = (updatedSubscription.pausedMeals || []).filter(pm =>
-    pm.status === 'pending' &&
-    new Date(pm.originalDate) >= weekStart &&
-    new Date(pm.originalDate) <= weekEnd
-  );
-
   return {
-    weeklyPausesUsed: updatedPausesInWeek.length,
-    weeklyPausesLimit: MAX_WEEKLY_PAUSES
+    pausesUsed: updatedSubscription.pauseCount || 0,
+    pausesLimit: 2
   };
 }
 

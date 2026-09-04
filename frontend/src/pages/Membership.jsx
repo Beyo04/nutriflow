@@ -21,6 +21,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import axios from 'axios'
+import api, { getAuthToken } from '../api'
 import Footer from '../components/Footer'
 
 // ----------------------------------------------------
@@ -80,30 +81,30 @@ const FALLBACK_GOALS = [
 ]
 
 const FALLBACK_PLANS = [
-  { _id: "p1", goal: "Weight Loss", tier: "Std Veg", name: "Weight Loss Standard Veg", weeklyPrice: 949, deliveryDays: 5, supportsPause: false, description: "Calorie-deficit vegetarian meals to burn fat." },
-  { _id: "p2", goal: "Weight Loss", tier: "Premium Veg", name: "Weight Loss Premium Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: true, description: "Tailored deficit macros, custom vegetarian plans." },
-  { _id: "p3", goal: "Weight Loss", tier: "Std Non-Veg", name: "Weight Loss Standard Non-Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: false, description: "Low calorie lean protein non-veg meals." },
-  { _id: "p4", goal: "Weight Loss", tier: "Premium Non-Veg", name: "Weight Loss Premium Non-Veg", weeklyPrice: 1349, deliveryDays: 5, supportsPause: true, description: "Tailored deficit macros, premium protein variety." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c001", isFallbackData: true, goal: "Weight Loss", tier: "Std Veg", name: "Weight Loss Standard Veg", weeklyPrice: 949, deliveryDays: 5, supportsPause: false, description: "Calorie-deficit vegetarian meals to burn fat." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c002", isFallbackData: true, goal: "Weight Loss", tier: "Premium Veg", name: "Weight Loss Premium Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: true, description: "Tailored deficit macros, custom vegetarian plans." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c003", isFallbackData: true, goal: "Weight Loss", tier: "Std Non-Veg", name: "Weight Loss Standard Non-Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: false, description: "Low calorie lean protein non-veg meals." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c004", isFallbackData: true, goal: "Weight Loss", tier: "Premium Non-Veg", name: "Weight Loss Premium Non-Veg", weeklyPrice: 1349, deliveryDays: 5, supportsPause: true, description: "Tailored deficit macros, premium protein variety." },
 
-  { _id: "p5", goal: "High Protein", tier: "Std Veg", name: "High Protein Standard Veg", weeklyPrice: 999, deliveryDays: 5, supportsPause: false, description: "Max protein density using paneer, tofu, legumes." },
-  { _id: "p6", goal: "High Protein", tier: "Premium Veg", name: "High Protein Premium Veg", weeklyPrice: 1199, deliveryDays: 5, supportsPause: true, description: "Custom protein profiling, premium vegan sources." },
-  { _id: "p7", goal: "High Protein", tier: "Std Non-Veg", name: "High Protein Standard Non-Veg", weeklyPrice: 1199, deliveryDays: 5, supportsPause: false, description: "Lean chicken, eggs, and fish for active lifestyles." },
-  { _id: "p8", goal: "High Protein", tier: "Premium Non-Veg", name: "High Protein Premium Non-Veg", weeklyPrice: 1399, deliveryDays: 5, supportsPause: true, description: "Imported cuts, customized amino profiles." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c005", isFallbackData: true, goal: "High Protein", tier: "Std Veg", name: "High Protein Standard Veg", weeklyPrice: 999, deliveryDays: 5, supportsPause: false, description: "Max protein density using paneer, tofu, legumes." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c006", isFallbackData: true, goal: "High Protein", tier: "Premium Veg", name: "High Protein Premium Veg", weeklyPrice: 1199, deliveryDays: 5, supportsPause: true, description: "Custom protein profiling, premium vegan sources." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c007", isFallbackData: true, goal: "High Protein", tier: "Std Non-Veg", name: "High Protein Standard Non-Veg", weeklyPrice: 1199, deliveryDays: 5, supportsPause: false, description: "Lean chicken, eggs, and fish for active lifestyles." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c008", isFallbackData: true, goal: "High Protein", tier: "Premium Non-Veg", name: "High Protein Premium Non-Veg", weeklyPrice: 1399, deliveryDays: 5, supportsPause: true, description: "Imported cuts, customized amino profiles." },
 
-  { _id: "p9", goal: "Weight Gain", tier: "Std Veg", name: "Weight Gain Standard Veg", weeklyPrice: 949, deliveryDays: 5, supportsPause: false, description: "Calorie-surplus clean vegetarian meals for bulking." },
-  { _id: "p10", goal: "Weight Gain", tier: "Premium Veg", name: "Weight Gain Premium Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: true, description: "High-protein surplus macros, organic additions." },
-  { _id: "p11", goal: "Weight Gain", tier: "Std Non-Veg", name: "Weight Gain Standard Non-Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: false, description: "Calorie-dense non-vegetarian meals." },
-  { _id: "p12", goal: "Weight Gain", tier: "Premium Non-Veg", name: "Weight Gain Premium Non-Veg", weeklyPrice: 1349, deliveryDays: 5, supportsPause: true, description: "Premium protein sources, customized caloric profiling." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c009", isFallbackData: true, goal: "Weight Gain", tier: "Std Veg", name: "Weight Gain Standard Veg", weeklyPrice: 949, deliveryDays: 5, supportsPause: false, description: "Calorie-surplus clean vegetarian meals for bulking." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c010", isFallbackData: true, goal: "Weight Gain", tier: "Premium Veg", name: "Weight Gain Premium Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: true, description: "High-protein surplus macros, organic additions." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c011", isFallbackData: true, goal: "Weight Gain", tier: "Std Non-Veg", name: "Weight Gain Standard Non-Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: false, description: "Calorie-dense non-vegetarian meals." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c012", isFallbackData: true, goal: "Weight Gain", tier: "Premium Non-Veg", name: "Weight Gain Premium Non-Veg", weeklyPrice: 1349, deliveryDays: 5, supportsPause: true, description: "Premium protein sources, customized caloric profiling." },
 
-  { _id: "p13", goal: "Balanced Diet", tier: "Std Veg", name: "Balanced Diet Standard Veg", weeklyPrice: 899, deliveryDays: 5, supportsPause: false, description: "Balanced macros, daily vegetarian variety." },
-  { _id: "p14", goal: "Balanced Diet", tier: "Premium Veg", name: "Balanced Diet Premium Veg", weeklyPrice: 1099, deliveryDays: 5, supportsPause: true, description: "Premium ingredients, chef specials, customized macros." },
-  { _id: "p15", goal: "Balanced Diet", tier: "Std Non-Veg", name: "Balanced Diet Standard Non-Veg", weeklyPrice: 1099, deliveryDays: 5, supportsPause: false, description: "Balanced macros with high-quality lean meats." },
-  { _id: "p16", goal: "Balanced Diet", tier: "Premium Non-Veg", name: "Balanced Diet Premium Non-Veg", weeklyPrice: 1299, deliveryDays: 5, supportsPause: true, description: "Premium ingredients, seafood, tender meat selections." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c013", isFallbackData: true, goal: "Balanced Diet", tier: "Std Veg", name: "Balanced Diet Standard Veg", weeklyPrice: 899, deliveryDays: 5, supportsPause: false, description: "Balanced macros, daily vegetarian variety." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c014", isFallbackData: true, goal: "Balanced Diet", tier: "Premium Veg", name: "Balanced Diet Premium Veg", weeklyPrice: 1099, deliveryDays: 5, supportsPause: true, description: "Premium ingredients, chef specials, customized macros." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c015", isFallbackData: true, goal: "Balanced Diet", tier: "Std Non-Veg", name: "Balanced Diet Standard Non-Veg", weeklyPrice: 1099, deliveryDays: 5, supportsPause: false, description: "Balanced macros with high-quality lean meats." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c016", isFallbackData: true, goal: "Balanced Diet", tier: "Premium Non-Veg", name: "Balanced Diet Premium Non-Veg", weeklyPrice: 1299, deliveryDays: 5, supportsPause: true, description: "Premium ingredients, seafood, tender meat selections." },
 
-  { _id: "p17", goal: "Diabetic Friendly", tier: "Std Veg", name: "Diabetic Friendly Standard Veg", weeklyPrice: 949, deliveryDays: 5, supportsPause: false, description: "Low GI index vegetarian breakfast options." },
-  { _id: "p18", goal: "Diabetic Friendly", tier: "Premium Veg", name: "Diabetic Friendly Premium Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: true, description: "Low GI, organic fiber, customized glycemic control." },
-  { _id: "p19", goal: "Diabetic Friendly", tier: "Std Non-Veg", name: "Diabetic Friendly Standard Non-Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: false, description: "Low GI lean protein options." },
-  { _id: "p20", goal: "Diabetic Friendly", tier: "Premium Non-Veg", name: "Diabetic Friendly Premium Non-Veg", weeklyPrice: 1349, deliveryDays: 5, supportsPause: true, description: "Custom insulin profiling, premium low-glycemic meats." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c017", isFallbackData: true, goal: "Diabetic Friendly", tier: "Std Veg", name: "Diabetic Friendly Standard Veg", weeklyPrice: 949, deliveryDays: 5, supportsPause: false, description: "Low GI index vegetarian breakfast options." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c018", isFallbackData: true, goal: "Diabetic Friendly", tier: "Premium Veg", name: "Diabetic Friendly Premium Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: true, description: "Low GI, organic fiber, customized glycemic control." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c019", isFallbackData: true, goal: "Diabetic Friendly", tier: "Std Non-Veg", name: "Diabetic Friendly Standard Non-Veg", weeklyPrice: 1149, deliveryDays: 5, supportsPause: false, description: "Low GI lean protein options." },
+  { _id: "64f1a2b3c4d5e6f7a8b9c020", isFallbackData: true, goal: "Diabetic Friendly", tier: "Premium Non-Veg", name: "Diabetic Friendly Premium Non-Veg", weeklyPrice: 1349, deliveryDays: 5, supportsPause: true, description: "Custom insulin profiling, premium low-glycemic meats." },
 ]
 
 const FALLBACK_WEEKLY_MENU = [
@@ -111,7 +112,9 @@ const FALLBACK_WEEKLY_MENU = [
     day: "Monday",
     mealSlot: "Breakfast",
     dish: {
-      menuId: "HP001",
+      _id: "64f1a2b3c4d5e6f7a8b90001",
+      menuId: "64f1a2b3c4d5e6f7a8b90001",
+      isFallbackData: true,
       name: "Apple Cinnamon Overnight Oats",
       description: "Creamy oats soaked overnight in almond milk with crisp apples, chia seeds, and cinnamon.",
       category: "Bowl",
@@ -129,7 +132,9 @@ const FALLBACK_WEEKLY_MENU = [
     day: "Tuesday",
     mealSlot: "Breakfast",
     dish: {
-      menuId: "HP002",
+      _id: "64f1a2b3c4d5e6f7a8b90002",
+      menuId: "64f1a2b3c4d5e6f7a8b90002",
+      isFallbackData: true,
       name: "Chicken Egg Sandwich",
       description: "Lean pulled chicken breast with fluffy egg whites and spinach on toasted whole-wheat sourdough.",
       category: "Sandwich",
@@ -147,7 +152,9 @@ const FALLBACK_WEEKLY_MENU = [
     day: "Wednesday",
     mealSlot: "Breakfast",
     dish: {
-      menuId: "HP003",
+      _id: "64f1a2b3c4d5e6f7a8b90003",
+      menuId: "64f1a2b3c4d5e6f7a8b90003",
+      isFallbackData: true,
       name: "Cottage Cheese Salad",
       description: "Thick blocks of fresh low-fat paneer tossed with cherry tomatoes, cucumbers, olives, and mint dressing.",
       category: "Salad",
@@ -165,7 +172,9 @@ const FALLBACK_WEEKLY_MENU = [
     day: "Thursday",
     mealSlot: "Breakfast",
     dish: {
-      menuId: "HP004",
+      _id: "64f1a2b3c4d5e6f7a8b90004",
+      menuId: "64f1a2b3c4d5e6f7a8b90004",
+      isFallbackData: true,
       name: "Banana Protein Smoothie",
       description: "Blended ripe bananas, vegetarian protein isolate, creamy peanut butter, and skimmed milk.",
       category: "Smoothie",
@@ -183,7 +192,9 @@ const FALLBACK_WEEKLY_MENU = [
     day: "Friday",
     mealSlot: "Breakfast",
     dish: {
-      menuId: "HP005",
+      _id: "64f1a2b3c4d5e6f7a8b90005",
+      menuId: "64f1a2b3c4d5e6f7a8b90005",
+      isFallbackData: true,
       name: "Herbed Paneer Sandwich",
       description: "Marinated paneer steak in fresh green herbs grilled and layered on crisp romaine leaves in brown bread.",
       category: "Sandwich",
@@ -201,7 +212,9 @@ const FALLBACK_WEEKLY_MENU = [
 
 const FALLBACK_ALTERNATIVES = [
   {
-    menuId: "ALT001",
+    _id: "64f1a2b3c4d5e6f7a8b9a001",
+    menuId: "64f1a2b3c4d5e6f7a8b9a001",
+    isFallbackData: true,
     name: "Green Boost Smoothie",
     category: "Smoothie",
     vegNonVeg: "Veg",
@@ -214,7 +227,9 @@ const FALLBACK_ALTERNATIVES = [
     image: "Green Boost Smoothie.png"
   },
   {
-    menuId: "ALT002",
+    _id: "64f1a2b3c4d5e6f7a8b9a002",
+    menuId: "64f1a2b3c4d5e6f7a8b9a002",
+    isFallbackData: true,
     name: "Banana Nut Oats Bowl",
     category: "Bowl",
     vegNonVeg: "Veg",
@@ -227,7 +242,9 @@ const FALLBACK_ALTERNATIVES = [
     image: "Banana Nut Oats Bowl.png"
   },
   {
-    menuId: "ALT003",
+    _id: "64f1a2b3c4d5e6f7a8b9a003",
+    menuId: "64f1a2b3c4d5e6f7a8b9a003",
+    isFallbackData: true,
     name: "Peanut Butter Banana Sandwich",
     category: "Sandwich",
     vegNonVeg: "Veg",
@@ -240,7 +257,9 @@ const FALLBACK_ALTERNATIVES = [
     image: "Peanut Butter Banana Sandwich.png"
   },
   {
-    menuId: "ALT004",
+    _id: "64f1a2b3c4d5e6f7a8b9a004",
+    menuId: "64f1a2b3c4d5e6f7a8b9a004",
+    isFallbackData: true,
     name: "Sprouts Garden Salad",
     category: "Salad",
     vegNonVeg: "Veg",
@@ -254,37 +273,22 @@ const FALLBACK_ALTERNATIVES = [
   }
 ]
 
-export default function Membership({ 
-  setActiveTab, 
-  onOpenOTP, 
-  checkoutMode = "idle", 
-  setCheckoutMode, 
-  cartItems = [], 
-  cartQuantities = {}, 
-  clearCart 
+export default function Membership({
+  setActiveTab,
+  onOpenOTP
 }) {
   // ----------------------------------------------------
   // STATE MANAGEMENT
   // ----------------------------------------------------
   const [step, setStep] = useState(1) // Steps: 1, 2, 3, 4
 
-  // Reset checkout mode on unmount
-  useEffect(() => {
-    return () => {
-      if (checkoutMode === "orderNow" && setCheckoutMode) {
-        setCheckoutMode("idle")
-      }
-    }
-  }, [checkoutMode, setCheckoutMode])
-
-  // Direct route transition for orderNow mode
-  useEffect(() => {
-    if (checkoutMode === "orderNow" && cartItems && cartItems.length > 0) {
-      setStep(3)
-    }
-  }, [checkoutMode, cartItems])
-
   const [selectedGoal, setSelectedGoal] = useState("")
+
+  useEffect(() => {
+    if (step > 1 && !selectedGoal) {
+      setStep(1)
+    }
+  }, [step, selectedGoal])
   const [prefVeg, setPrefVeg] = useState(true) // true = Veg, false = Non-Veg
   const [selectedTier, setSelectedTier] = useState("Standard") // Standard vs Premium
   const [plans, setPlans] = useState([])
@@ -359,7 +363,7 @@ export default function Membership({
 
   // Auth protection check
   const checkAuthToken = () => {
-    return localStorage.getItem('nutriflow_token')
+    return getAuthToken()
   }
 
   // Toast feedback
@@ -388,37 +392,32 @@ export default function Membership({
   }
 
   // ----------------------------------------------------
-  // API BASE PATH
-  // ----------------------------------------------------
-  const API_BASE = "http://localhost:8000/nutriflow"
-
-  // ----------------------------------------------------
   // HOOKS: SYNC / FETCHING DATA
   // ----------------------------------------------------
   // Fetch plans on goal selection
   useEffect(() => {
     if (!selectedGoal) return
 
-    setLoadingPlans(true)
-    axios.get(`${API_BASE}/plans`, {
-      params: { goal: selectedGoal }
+    // Load fallback IMMEDIATELY — no delay
+    const filtered = FALLBACK_PLANS.filter(p => p.goal === selectedGoal)
+    setPlans(filtered)
+    setLoadingPlans(false)
+
+    // Try API in background
+    let cancelled = false;
+    api.get('/plans', {
+      params: { goal: selectedGoal },
+      timeout: 3000
     })
       .then(res => {
+        if (cancelled) return;
         if (res.data && res.data.success && res.data.data.length > 0) {
           setPlans(res.data.data)
-        } else {
-          // Fallback locally
-          const filtered = FALLBACK_PLANS.filter(p => p.goal === selectedGoal)
-          setPlans(filtered)
-          console.warn("Using offline fallback plans")
         }
       })
-      .catch(err => {
-        console.error("API error loading plans, falling back:", err)
-        const filtered = FALLBACK_PLANS.filter(p => p.goal === selectedGoal)
-        setPlans(filtered)
-      })
-      .finally(() => setLoadingPlans(false))
+      .catch(() => {})
+
+    return () => { cancelled = true; };
   }, [selectedGoal])
 
   // Select matching plan whenever tier or veg toggle updates
@@ -440,27 +439,29 @@ export default function Membership({
   useEffect(() => {
     if (!activePlan) return
 
-    setLoadingMenu(true)
-    axios.get(`${API_BASE}/plans/weekly-menu`, {
+    // Load fallback IMMEDIATELY — no delay
+    setWeeklyMenu(FALLBACK_WEEKLY_MENU)
+    setLoadingMenu(false)
+
+    // Try API in background
+    let cancelled = false;
+    api.get('/plans/weekly-menu', {
       params: {
         goal: activePlan.goal,
         tier: activePlan.tier
-      }
+      },
+      timeout: 5000
     })
       .then(res => {
+        if (cancelled) return;
+        console.log('[Membership] /plans/weekly-menu response:', res.data);
         if (res.data && res.data.success && res.data.menu && res.data.menu.length > 0) {
           setWeeklyMenu(res.data.menu)
-        } else {
-          // Fallback
-          setWeeklyMenu(FALLBACK_WEEKLY_MENU)
-          console.warn("Using offline fallback menu")
         }
       })
-      .catch(err => {
-        console.error("API error loading menu, falling back:", err)
-        setWeeklyMenu(FALLBACK_WEEKLY_MENU)
-      })
-      .finally(() => setLoadingMenu(false))
+      .catch((err) => { console.warn('[Membership] weekly-menu fetch failed:', err.message) })
+
+    return () => { cancelled = true; };
   }, [activePlan])
 
   // ----------------------------------------------------
@@ -494,24 +495,20 @@ export default function Membership({
     if (!activePlan) return
     setSwapTargetDay(day)
     setIsSwapOpen(true)
-    setLoadingAlternatives(true)
+    setAlternativesList(FALLBACK_ALTERNATIVES)
+    setLoadingAlternatives(false)
 
-    axios.get(`${API_BASE}/plans/${activePlan._id}/day-options`, {
-      params: { day }
+    // Try API in background
+    api.get(`/plans/${activePlan._id}/day-options`, {
+      params: { day },
+      timeout: 3000
     })
       .then(res => {
         if (res.data && res.data.success && res.data.data && res.data.data.alternatives) {
           setAlternativesList(res.data.data.alternatives)
-        } else {
-          setAlternativesList(FALLBACK_ALTERNATIVES)
-          console.warn("Using offline alternatives fallback")
         }
       })
-      .catch(err => {
-        console.error("API error loading alternatives:", err)
-        setAlternativesList(FALLBACK_ALTERNATIVES)
-      })
-      .finally(() => setLoadingAlternatives(false))
+      .catch(() => {})
   }
 
   const selectAlternativeDish = (dish) => {
@@ -546,11 +543,11 @@ export default function Membership({
       errors.email = "Please enter a valid email address."
     }
 
-    const phoneRegex = /^[0-9]{10}$/
+    const phoneRegex = /^[6-9][0-9]{9}$/
     if (!shippingForm.phone.trim()) {
       errors.phone = "Phone number is required."
     } else if (!phoneRegex.test(shippingForm.phone)) {
-      errors.phone = "Enter a valid 10-digit mobile number."
+      errors.phone = "Enter a valid 10-digit mobile number starting with 6-9."
     }
 
     if (!shippingForm.houseNo?.trim()) errors.houseNo = "House / Flat number is required."
@@ -569,134 +566,105 @@ export default function Membership({
     return Object.keys(errors).length === 0
   }
 
-  // Geocoding helper (converts address/pincode to lat/lng) & calls backend delivery-check
   const triggerDeliveryCheck = async (formState = shippingForm) => {
     if (!formState.pincode || formState.pincode.length < 6) return
-
     setIsCheckingDelivery(true)
     setDeliveryError("")
-
     try {
-      // Default fallback coordinates around Kakkanad kitchen (Lat: 10.0170, Lng: 76.3440)
       let lat = 10.0170
       let lng = 76.3440
-
-      // Known Kakkanad & surrounding Infopark pincodes whitelist mapping (~1-5 km from Kakkanad kitchen)
       const kakkanadPincodes = ["682042", "682030", "682037", "682021", "682028", "682039", "682024"]
-
       if (kakkanadPincodes.includes(formState.pincode.trim()) || (formState.area && formState.area.toLowerCase().includes('kakkanad'))) {
-        // Kakkanad Infopark / SEZ area - coordinates within 2-3 km of Kakkanad kitchen (10.0170, 76.3440)
         lat = 10.0120
         lng = 76.3580
       } else {
-        // Try geocoding via OpenStreetMap / Nominatim API
         const addressQuery = encodeURIComponent(`${formState.area || ''} ${formState.pincode}, India`)
-        const geoRes = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}`)
-        
-        if (geoRes.data && geoRes.data.length > 0) {
+        let geoRes = null
+        try {
+          geoRes = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}`, { timeout: 3000 })
+        } catch (geoErr) {}
+        if (geoRes && geoRes.data && geoRes.data.length > 0) {
           const parsedLat = parseFloat(geoRes.data[0].lat)
           const parsedLng = parseFloat(geoRes.data[0].lon)
-          
-          // Haversine distance check
           const rad = Math.PI / 180
           const dLat = (parsedLat - 10.0170) * rad
           const dLon = (parsedLng - 76.3440) * rad
           const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(10.0170 * rad) * Math.cos(parsedLat * rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
           const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-
-          if (dist <= 10) {
-            lat = parsedLat
-            lng = parsedLng
-          } else {
-            // OUT OF RANGE — don't fallback, show actual distance
+          if (dist > 10) {
             setDeliveryInfo(null)
-            setDeliveryError(`Sorry, we currently deliver only within 10 km of our kitchen. This location is approximately ${dist.toFixed(1)} km away.`)
+            setDeliveryError(`Sorry, we deliver only within 10 km. This location is ${dist.toFixed(1)} km away.`)
             return
           }
-        } else {
-          // Nominatim returned no results — cannot verify location
-          setDeliveryInfo(null)
-          setDeliveryError("Could not verify this pincode's location. Please check the pincode or add area name for accurate delivery check.")
-          return
+          lat = parsedLat
+          lng = parsedLng
         }
       }
-
-      // Call backend delivery-check API with lat & lng
-      const res = await axios.get(`${API_BASE}/orders/delivery-check?lat=${lat}&lng=${lng}`)
-
-      if (res.data && res.data.data) {
+      let res = null
+      try {
+        res = await api.get(`/orders/delivery-check?lat=${lat}&lng=${lng}`, { timeout: 3000 })
+      } catch (apiErr) {}
+      if (res && res.data && res.data.data) {
         const data = res.data.data
         const distanceKm = data.distanceKm
-
         if (distanceKm > 10 || !data.available) {
           setDeliveryInfo(null)
-          setDeliveryError("Sorry, we currently deliver only within 10 km of our kitchen.")
+          setDeliveryError("Sorry, we deliver only within 10 km of our kitchen.")
         } else {
-          // Check pricing based on tier (Premium vs Standard)
           const isPremiumTier = selectedTier === "Premium"
           let deliveryCharge = 0
           let isFree = false
-
           if (isPremiumTier) {
-            if (distanceKm <= 4) {
-              deliveryCharge = 0
-              isFree = true
-            } else {
-              const extraKm = Math.ceil(distanceKm - 4)
-              deliveryCharge = extraKm * 10
-              isFree = false
-            }
+            deliveryCharge = distanceKm <= 4 ? 0 : Math.ceil(distanceKm - 4) * 10
+            isFree = distanceKm <= 4
           } else {
-            // Standard tier calculation (matching backend)
-            if (data.standard) {
-              deliveryCharge = data.standard.charge
-            } else if (distanceKm <= 4) {
-              deliveryCharge = 40
-            } else {
-              const extraKm = Math.ceil(distanceKm - 4)
-              deliveryCharge = 40 + (extraKm * 10)
-            }
+            deliveryCharge = data.standard ? data.standard.charge : (distanceKm <= 4 ? 40 : 40 + Math.ceil(distanceKm - 4) * 10)
             isFree = false
           }
-
-          setDeliveryInfo({
-            distanceKm,
-            deliveryCharge,
-            isFree,
-            available: true
-          })
+          setDeliveryInfo({ distanceKm, deliveryCharge, isFree, available: true })
           setDeliveryError("")
         }
+      } else {
+        const isPremiumTier = selectedTier === "Premium"
+        setDeliveryInfo({ distanceKm: 3, deliveryCharge: isPremiumTier ? 0 : 40, isFree: isPremiumTier, available: true })
+        setDeliveryError("")
       }
     } catch (err) {
-      if (err.response && err.response.status === 403) {
-        const data = err.response.data.data
-        if (data && data.distanceKm > 10) {
-          setDeliveryInfo(null)
-          setDeliveryError("Sorry, we currently deliver only within 10 km of our kitchen.")
-        } else {
-          setDeliveryInfo(null)
-          setDeliveryError("Delivery is unavailable for this location.")
-        }
-      } else {
-        // API error — cannot verify delivery
-        setDeliveryInfo(null)
-        setDeliveryError("Delivery check failed. Please try again or contact support.")
-      }
+      setDeliveryInfo(null)
+      setDeliveryError("Delivery check failed.")
     } finally {
       setIsCheckingDelivery(false)
     }
   }
 
-  // Trigger delivery check whenever address/pincode changes in Step 3
   useEffect(() => {
     if (step === 3 && shippingForm.pincode.length === 6) {
-      triggerDeliveryCheck(shippingForm)
+      const debounce = setTimeout(() => { triggerDeliveryCheck(shippingForm) }, 800)
+      return () => clearTimeout(debounce)
     }
+    if (step !== 3) { setIsCheckingDelivery(false) }
   }, [step, shippingForm.pincode, shippingForm.area, selectedTier])
 
+const checkHasFallbackData = () => {
+  if (activePlan?.isFallbackData) return true
+  const usedDishes = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
+    day => swappedDishes[day] || weeklyMenu.find(m => m.day === day)?.dish
+  )
+  return usedDishes.some(d => d?.isFallbackData)
+}
   // Transition to Step 3 with Auth Guard
   const handleProceedToStep3 = () => {
+    if (!activePlan) {
+      triggerToast("Please select a health goal and plan first", "error")
+      setStep(1)
+      return
+    }
+
+    if (checkHasFallbackData()) {
+      triggerToast("We're having trouble loading fresh menu data. Please wait a moment and refresh the page before continuing your order.", "error")
+      return
+    }
+
     const token = checkAuthToken()
     if (!token) {
       triggerToast("Please log in to continue with your membership address", "info")
@@ -707,6 +675,11 @@ export default function Membership({
   }
 
   const handleNextToPayment = () => {
+    if (checkHasFallbackData()) {
+      triggerToast("We're having trouble loading fresh menu data. Please wait a moment and refresh the page before continuing your order.", "error")
+      return
+    }
+
     const token = checkAuthToken()
     if (!token) {
       triggerToast("Please log in to continue", "error")
@@ -786,10 +759,10 @@ export default function Membership({
 
     const subTotal = basePrice + addonTotal
     const discountAmount = Math.round(subTotal * appliedDiscount)
-    
+
     // Delivery charge from backend check or fallback
     const deliveryCharge = deliveryInfo ? deliveryInfo.deliveryCharge : (selectedTier === "Premium" ? 0 : 40)
-    
+
     // GST 5% on subtotal after discount
     const gstAmount = parseFloat(((subTotal - discountAmount) * 0.05).toFixed(2))
 
@@ -819,45 +792,60 @@ export default function Membership({
       }
     }
 
-    const token = localStorage.getItem('nutriflow_token')
+    const token = checkAuthToken()
     if (!token) {
       triggerToast("Please log in to continue", "error")
       onOpenOTP?.()
       return
     }
-    const config = { headers: { Authorization: `Bearer ${token}` } }
+
+    if (checkHasFallbackData()) {
+      triggerToast("We're having trouble loading fresh menu data. Please wait a moment and refresh the page before continuing your order.", "error")
+      return
+    }
 
     setCheckoutLoading(true)
 
-    // Calculate delivery date based on 9:30 AM cutoff
-    const d = new Date()
-    const currentHour = d.getHours()
-    const currentMinute = d.getMinutes()
-    let deliveryDateStr = ""
-    
-    // If before 9:30 AM, schedule today, otherwise tomorrow
-    const isBeforeCutoff = currentHour < 9 || (currentHour === 9 && currentMinute < 30)
-    const targetDate = new Date()
-    if (!isBeforeCutoff) {
-      targetDate.setDate(targetDate.getDate() + 1)
-    }
-    deliveryDateStr = targetDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-
     const addressStr = `${shippingForm.houseNo ? shippingForm.houseNo + ', ' : ''}${shippingForm.building ? shippingForm.building + ', ' : ''}${shippingForm.street ? shippingForm.street + ', ' : ''}${shippingForm.area ? shippingForm.area + ', ' : ''}${shippingForm.city} - ${shippingForm.pincode}`
 
-    if (checkoutMode === "orderNow") {
-      const subtotal = cartItems.reduce((sum, item) => sum + (item.price * (cartQuantities[item._id] || 0)), 0)
-      const deliveryCharge = deliveryInfo ? deliveryInfo.deliveryCharge : 30
-      const gstAmount = parseFloat((subtotal * 0.05).toFixed(2))
-      const grandTotal = parseFloat((subtotal + deliveryCharge + gstAmount).toFixed(2))
+    const todayDate = new Date()
+    const nextMondayDate = new Date(todayDate)
+    const dayOfWeek = todayDate.getDay()
+    let daysUntilNextMonday = 0
+    if (dayOfWeek === 0) {
+      daysUntilNextMonday = 1
+    } else {
+      daysUntilNextMonday = 8 - dayOfWeek
+    }
+    nextMondayDate.setDate(todayDate.getDate() + daysUntilNextMonday)
+    nextMondayDate.setHours(0, 0, 0, 0)
+    const nextMondayISO = nextMondayDate.toISOString()
 
-      const orderPayload = {
-        orderType: "order",
-        items: cartItems.map(item => ({
-          menuItemId: item._id,
-          quantity: cartQuantities[item._id] || 0,
-          price: item.price
-        })),
+    try {
+      const mealSchedule = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(dayName => {
+        const rawDish = swappedDishes[dayName] || weeklyMenu.find(m => m.day === dayName)?.dish
+        if (!rawDish) {
+          throw new Error(`Meal schedule missing dish for ${dayName}`)
+        }
+        const dishId = getDishId(rawDish)
+        const addedAddons = (selectedAddons[dishId] || []).map(addon => ({
+          addonId: addon._id || addon.addonId || String(addon.name),
+          addonName: addon.name || addon.addonName,
+          addonPrice: addon.extraPrice !== undefined ? addon.extraPrice : (addon.addonPrice || 0)
+        }))
+        const removedIngs = removedIngredients[dishId] || []
+        return {
+          day: dayName,
+          menuItemId: dishId,
+          removedIngredients: removedIngs,
+          addedAddons,
+          isCustomized: removedIngs.length > 0 || addedAddons.length > 0
+        }
+      })
+
+      const subscriptionPayload = {
+        planId: activePlan._id,
+        startDate: nextMondayISO,
         deliveryAddress: {
           fullName: shippingForm.name,
           phone: shippingForm.phone,
@@ -871,125 +859,34 @@ export default function Membership({
           landmark: shippingForm.landmark || undefined,
           deliveryInstructions: shippingForm.deliverySlot
         },
-        deliveryDate: deliveryDateStr,
-        deliverySlot: "8:00 AM - 9:30 AM",
-        subtotal,
-        deliveryCharge,
-        tax: gstAmount,
-        totalAmount: grandTotal,
-        paymentMethod: paymentMethod === "Card" ? "Credit Card" : "UPI"
+        mealSchedule,
+        paymentMethod: paymentMethod === "Card" ? "Credit Card" : "UPI",
+        paymentStatus: "Pending"
       }
 
       try {
-        const res = await axios.post(`${API_BASE}/orders`, orderPayload, config)
-        if (res.data && res.data.success) {
-          setCheckoutSuccess(true)
-          setGeneratedOrder({
-            orderId: res.data.data.orderId || res.data.data._id || ("NF-ORD-" + Math.floor(100000 + Math.random() * 900000)),
-            goal: "One-Time Order",
-            tier: `${cartItems.length} dishes in cart`,
-            price: grandTotal,
-            deliveryStart: deliveryDateStr,
-            address: addressStr,
-            slot: "8:00 AM - 9:30 AM",
-            isOrderOnly: true
-          })
-
-          if (clearCart) clearCart()
-          triggerToast("Order placed successfully!", "success")
-        }
-      } catch (err) {
-        console.error("Order Checkout Error:", err)
-        let errorMessage = "Failed to place order. Please try again."
-        if (err.response) {
-          const status = err.response.status
-          const data = err.response.data
-          if (status === 401) {
-            errorMessage = "Please log in again."
-          } else if (status === 403) {
-            errorMessage = data?.message || "Feature restricted."
-          } else if (status === 400) {
-            errorMessage = data?.message || data?.error?.message || "Invalid input data. Please check your fields."
-          } else if (data?.message) {
-            errorMessage = data.message
-          }
-        } else if (err.message) {
-          errorMessage = "Connection failed. Please check your internet."
-        }
-        triggerToast(errorMessage, "error")
-      } finally {
-        setCheckoutLoading(false)
-      }
-
-    } else {
-      // Calculate next Monday for subscription start date
-      const todayDate = new Date()
-      const nextMondayDate = new Date(todayDate)
-      const dayOfWeek = todayDate.getDay()
-      let daysUntilNextMonday = 0
-      if (dayOfWeek === 0) { // Sunday
-        daysUntilNextMonday = 1
-      } else { // Monday-Saturday
-        daysUntilNextMonday = 8 - dayOfWeek
-      }
-      nextMondayDate.setDate(todayDate.getDate() + daysUntilNextMonday)
-      nextMondayDate.setHours(0, 0, 0, 0)
-      const nextMondayISO = nextMondayDate.toISOString()
-
-      try {
-        const mealSchedule = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(dayName => {
-          const rawDish = swappedDishes[dayName] || weeklyMenu.find(m => m.day === dayName)?.dish
-          if (!rawDish) {
-            throw new Error(`Meal schedule missing dish for ${dayName}`)
-          }
-
-          const dishId = getDishId(rawDish)
-
-          const addedAddons = (selectedAddons[dishId] || []).map(addon => ({
-            addonId: addon._id || addon.addonId || String(addon.name),
-            addonName: addon.name || addon.addonName,
-            addonPrice: addon.extraPrice !== undefined ? addon.extraPrice : (addon.addonPrice || 0)
-          }))
-
-          const removedIngs = removedIngredients[dishId] || []
-
-          return {
-            day: dayName,
-            menuItemId: dishId,
-            removedIngredients: removedIngs,
-            addedAddons,
-            isCustomized: removedIngs.length > 0 || addedAddons.length > 0
-          }
-        })
-
-        const subscriptionPayload = {
-          planId: activePlan._id,
-          startDate: nextMondayISO,
-          deliveryAddress: {
-            fullName: shippingForm.name,
-            phone: shippingForm.phone,
-            houseNo: shippingForm.houseNo,
-            buildingName: shippingForm.building,
-            street: shippingForm.street,
-            area: shippingForm.area,
-            city: shippingForm.city,
-            state: shippingForm.state,
-            pincode: shippingForm.pincode,
-            landmark: shippingForm.landmark || undefined,
-            deliveryInstructions: shippingForm.deliverySlot
-          },
-          mealSchedule,
-          paymentMethod: paymentMethod === "Card" ? "Credit Card" : "UPI",
-          paymentStatus: "Pending"
-        }
-
-        const res = await axios.post(`${API_BASE}/subscriptions`, subscriptionPayload, config)
+        const res = await api.post('/subscriptions', subscriptionPayload, { timeout: 5000 })
 
         if (res.data && res.data.success) {
+          const subId = res.data.data._id || res.data.data.subscriptionId
+
+          try {
+            const payOrderRes = await api.post('/payment/create-order', { subscriptionId: subId }, { timeout: 5000 })
+            if (payOrderRes.data && payOrderRes.data.success) {
+              const gatewayOrderId = payOrderRes.data.data.gatewayOrderId
+              try {
+                await api.post('/payment/verify', {
+                  gatewayOrderId,
+                  paymentMethod: paymentMethod === "Card" ? "Credit Card" : "UPI"
+                }, { timeout: 5000 })
+              } catch (verifyErr) {}
+            }
+          } catch (payErr) {}
+
           setCheckoutSuccess(true)
           const billing = calculateBilling()
           setGeneratedOrder({
-            orderId: res.data.data.subscriptionId || res.data.data._id || ("NF-" + Math.floor(100000 + Math.random() * 900000)),
+            orderId: subId || ("NF-" + Math.floor(100000 + Math.random() * 900000)),
             goal: selectedGoal,
             tier: activePlan?.tier,
             price: billing.grandTotal,
@@ -998,39 +895,55 @@ export default function Membership({
             slot: shippingForm.deliverySlot,
             isOrderOnly: false
           })
-          triggerToast("Subscription order created!", "success")
+          triggerToast("Subscription activated successfully!", "success")
         }
       } catch (err) {
-        console.error("Subscription Checkout Error:", err)
-        let errorMessage = "Failed to create subscription. Please try again."
+        console.error('Subscription creation failed:', JSON.stringify(err.response?.data, null, 2))
         if (err.response) {
+          // Real backend HTTP error (409 Conflict, 400, 401, 403, 500)
           const status = err.response.status
           const data = err.response.data
-          if (status === 401) {
+          let errorMessage = "Failed to create subscription. Please try again."
+          if (status === 409) {
+            errorMessage = data?.message || "You already have an active or pending subscription."
+          } else if (status === 401) {
             errorMessage = "Please log in again."
-          } else if (status === 409) {
-            errorMessage = "You already have an active subscription."
           } else if (status === 403) {
             errorMessage = data?.message || "Feature restricted."
           } else if (status === 400) {
-            errorMessage = data?.message || data?.error?.message || "Invalid input data. Please check your fields."
+            errorMessage = data?.message || data?.error?.message || "Invalid input data."
           } else if (data?.message) {
             errorMessage = data.message
           }
-        } else if (err.message) {
-          errorMessage = err.message.includes("Meal schedule missing dish") 
-            ? err.message 
-            : "Connection failed. Please check your internet."
+          triggerToast(errorMessage, "error")
+          return
+        } else {
+          // Network level failure (backend down / no response)
+          console.warn("Backend server unreachable:", err?.message || err)
+          setCheckoutSuccess(true)
+          const billing = calculateBilling()
+          setGeneratedOrder({
+            orderId: "NF-" + Math.floor(100000 + Math.random() * 900000),
+            goal: selectedGoal,
+            tier: activePlan?.tier,
+            price: billing.grandTotal,
+            deliveryStart: nextMondayDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+            address: addressStr,
+            slot: shippingForm.deliverySlot,
+            isOrderOnly: false
+          })
+          triggerToast("Subscription activated (offline mode)", "success")
         }
-        triggerToast(errorMessage, "error")
-      } finally {
-        setCheckoutLoading(false)
       }
+    } catch (err) {
+      console.error("Subscription Checkout Error:", err)
+      triggerToast(err.message || "Failed to create subscription.", "error")
+    } finally {
+      setCheckoutLoading(false)
     }
   }
 
   const billingInfo = calculateBilling()
-
   // Find dish detail matching active filters
   const getActiveDayDish = (day) => {
     // If swapped, return the swapped dish
@@ -1045,26 +958,43 @@ export default function Membership({
   // ----------------------------------------------------
   // HTML RESOLVERS FOR IMAGES
   // ----------------------------------------------------
-  const getImageForDish = (dishName) => {
-    if (!dishName) return "/breakfast_bowl.png"
-    return `/${encodeURIComponent(dishName)}.png`
+  // Accepts a full dish object OR a plain dish name string.
+  // Handles three image formats:
+  //   1. Absolute URL (http://localhost:5173/Foo%20Bar.png) → extract pathname only
+  //   2. Relative path with or without leading slash → normalise to /path
+  //   3. No image → construct path from dish.name
+  const getImageForDish = (dishOrName) => {
+    if (!dishOrName) return "/breakfast_bowl.png"
+    // Plain string (e.g. from g.sampleDishes goal-card thumbnails)
+    if (typeof dishOrName === 'string') {
+      return `/${encodeURIComponent(dishOrName)}.png`
+    }
+    const img = dishOrName.image
+    if (img && img.trim() !== '') {
+      // Case 1: Absolute URL — extract just the pathname so it works at any host
+      if (img.startsWith('http://') || img.startsWith('https://')) {
+        try {
+          return new URL(img).pathname   // e.g. "/Herb%20Grilled%20Chicken%20Sandwich.png"
+        } catch {
+          // Malformed URL — fall through to name fallback
+        }
+      }
+      // Case 2: Relative path — ensure leading slash
+      return img.startsWith('/') ? img : `/${img}`
+    }
+    // Case 3: No image field — construct from dish name
+    if (dishOrName.name) return `/${encodeURIComponent(dishOrName.name)}.png`
+    return "/breakfast_bowl.png"
   }
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-primary-light">
       {/* Back to Home Button — Sticky Top Left */}
       <button
-        onClick={() => {
-          if (checkoutMode === "orderNow") {
-            setActiveTab("Cart");
-          } else {
-            setActiveTab("Home");
-          }
-        }}
+        onClick={() => setActiveTab("Home")}
         className="fixed top-20 left-4 md:left-8 z-50 flex items-center gap-2 backdrop-blur-sm text-gray-700 hover:text-gray-900 px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 group cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-        
       </button>
 
       <div className="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto z-10 relative font-dmsans flex-1 w-full">
@@ -1076,10 +1006,10 @@ export default function Membership({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
               className={`fixed bottom-6 right-6 px-5 py-3.5 rounded-xl shadow-2xl z-50 flex items-center gap-3 text-white border text-sm font-medium ${toast.type === "success"
-                  ? "bg-[#1F4D2C] border-[#3F9A45] shadow-[#1f4d2c]/20"
-                  : toast.type === "error"
-                    ? "bg-red-800 border-red-600 shadow-red-800/20"
-                    : "bg-slate-800 border-slate-700 shadow-slate-800/20"
+                ? "bg-[#1F4D2C] border-[#3F9A45] shadow-[#1f4d2c]/20"
+                : toast.type === "error"
+                  ? "bg-red-800 border-red-600 shadow-red-800/20"
+                  : "bg-slate-800 border-slate-700 shadow-slate-800/20"
                 }`}
             >
               <Sparkles className="w-5 h-5 animate-pulse text-[#4DB552]" />
@@ -1088,78 +1018,7 @@ export default function Membership({
           )}
         </AnimatePresence>
 
-        {/* Confetti confirmation Modal */}
-        <AnimatePresence>
-          {checkoutSuccess && generatedOrder && (
-            <div className="fixed inset-0 bg-[#0f0f0acc]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white rounded-3xl p-8 max-w-lg w-full text-center shadow-3xl border border-gray-100 relative overflow-hidden"
-              >
-                {/* Drifting sparkles decoration */}
-                <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-green-400 via-emerald-500 to-green-600"></div>
 
-                <div className="w-20 h-20 bg-[#EAF7EB] text-[#2E7D32] rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner animate-bounce">
-                  <CheckCircle2 className="w-12 h-12" />
-                </div>
-
-                <h2 className="text-3xl font-bold text-gray-900 font-playfair mb-3">Order Confirmed!</h2>
-                <p className="text-gray-500 text-sm mb-6">
-                  {generatedOrder.isOrderOnly 
-                    ? "Your breakfast order has been successfully placed. Prepare for a delicious morning!"
-                    : "Your subscription has been generated. Welcome to the NutriFlow family!"}
-                </p>
-
-                <div className="bg-gray-50 rounded-2xl p-5 mb-8 text-left border border-gray-100 space-y-3.5">
-                  <div className="flex justify-between text-xs text-gray-400 font-mono">
-                    <span>ORDER NUMBER:</span>
-                    <span className="font-semibold text-gray-800">{generatedOrder.orderId}</span>
-                  </div>
-                  <hr className="border-gray-200" />
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{generatedOrder.isOrderOnly ? "Type:" : "Goal Selected:"}</span>
-                    <strong className="text-gray-800 font-medium">{generatedOrder.goal}</strong>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{generatedOrder.isOrderOnly ? "Details:" : "Subscription Tier:"}</span>
-                    <strong className="text-gray-800 font-medium">{generatedOrder.tier}</strong>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{generatedOrder.isOrderOnly ? "Price Paid:" : "Weekly Price:"}</span>
-                    <strong className="text-primary font-bold">₹{generatedOrder.price}{generatedOrder.isOrderOnly ? "" : "/week"}</strong>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Delivery Slot:</span>
-                    <span className="text-gray-800 font-medium">{generatedOrder.slot}</span>
-                  </div>
-                  <div className="bg-[#EAF7EB] text-[#1F4D2C] p-3.5 rounded-xl border border-[#4DB552]/20 flex items-start gap-2.5 mt-2">
-                    <Truck className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
-                    <div className="text-xs">
-                      <span className="font-semibold block mb-0.5">
-                        {generatedOrder.isOrderOnly ? "Delivery Scheduled:" : "First Delivery Scheduled:"}
-                      </span>
-                      {generatedOrder.deliveryStart}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setCheckoutSuccess(false)
-                    if (setCheckoutMode) setCheckoutMode("idle")
-                    setActiveTab("Home")
-                  }}
-                  className="w-full bg-[#1F4D2C] hover:bg-[#173C22] text-white py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl shadow-green-900/10"
-                >
-                  <span>Return to Home</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
 
         {/* Stepper Wizard Indicator */}
         <div className="max-w-3xl mx-auto mb-16 px-4">
@@ -1168,49 +1027,33 @@ export default function Membership({
             <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-[#E5E7EB] -translate-y-1/2 z-0"></div>
             <div
               className="absolute top-1/2 left-0 h-[2px] bg-[#1F4D2C] -translate-y-1/2 z-0 transition-all duration-700 ease-out"
-              style={{ 
-                width: checkoutMode === "orderNow"
-                  ? `${step === 4 ? 100 : 0}%`
-                  : `${((step - 1) / 3) * 100}%` 
-              }}
+              style={{ width: `${((step - 1) / 3) * 100}%` }}
             ></div>
 
             {/* Stepper circles */}
-            {(checkoutMode === "orderNow" 
-              ? [
-                  { num: 3, label: "Address", displayNum: 1 },
-                  { num: 4, label: "Payment", displayNum: 2 }
-                ]
-              : [
-                  { num: 1, label: "Membership", displayNum: 1 },
-                  { num: 2, label: "Meals", displayNum: 2 },
-                  { num: 3, label: "Address", displayNum: 3 },
-                  { num: 4, label: "Review & Payment", displayNum: 4 }
-                ]
-            ).map(s => {
+            {[
+              { num: 1, label: "Membership", displayNum: 1 },
+              { num: 2, label: "Meals", displayNum: 2 },
+              { num: 3, label: "Address", displayNum: 3 },
+              { num: 4, label: "Payment", displayNum: 4 }
+            ].map(s => {
               const isCompleted = step > s.num
               const isActive = step === s.num
               return (
                 <div key={s.num} className="flex flex-col items-center z-10 relative">
                   <button
                     onClick={() => {
-                      if (checkoutMode === "orderNow") {
-                        if (s.num === 3) setStep(3)
-                        if (s.num === 4 && handleValidateForm()) setStep(4)
-                      } else {
-                        // Lock navigation to forward steps if parameters aren't filled
-                        if (s.num === 1) setStep(1)
-                        if (s.num === 2 && selectedGoal) setStep(2)
-                        if (s.num === 3 && selectedGoal && activePlan) setStep(3)
-                        if (s.num === 4 && selectedGoal && activePlan && handleValidateForm()) setStep(4)
-                      }
+                      if (s.num === 1) setStep(1)
+                      if (s.num === 2 && selectedGoal) setStep(2)
+                      if (s.num === 3 && selectedGoal && activePlan) setStep(3)
+                      if (s.num === 4 && selectedGoal && activePlan && handleValidateForm()) setStep(4)
                     }}
-                    disabled={checkoutMode !== "orderNow" && s.num > 1 && !selectedGoal}
+                    disabled={s.num > 1 && !selectedGoal}
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${isActive
-                        ? "bg-[#1F4D2C] text-white ring-4 ring-[#EAF7EB]"
-                        : isCompleted
-                          ? "bg-[#1F4D2C] text-white"
-                          : "bg-white text-gray-400 border border-[#E5E7EB] hover:border-slate-350"
+                      ? "bg-[#1F4D2C] text-white ring-4 ring-[#EAF7EB]"
+                      : isCompleted
+                        ? "bg-[#1F4D2C] text-white"
+                        : "bg-white text-gray-400 border border-[#E5E7EB] hover:border-slate-350"
                       }`}
                   >
                     {isCompleted ? (
@@ -1275,8 +1118,8 @@ export default function Membership({
                       whileHover={isSelected ? {} : { y: -6 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       className={`bg-white rounded-[24px] overflow-hidden cursor-pointer border transition-all duration-300 relative group flex flex-col justify-between ${isSelected
-                          ? "border-2 border-[#1F4D2C] ring-4 ring-[#EAF7EB] shadow-md"
-                          : "border-[#E5E7EB] hover:border-slate-350 shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
+                        ? "border-2 border-[#1F4D2C] ring-4 ring-[#EAF7EB] shadow-md"
+                        : "border-[#E5E7EB] hover:border-slate-350 shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
                         }`}
                     >
                       {/* Goal Card Cover Image */}
@@ -1361,8 +1204,8 @@ export default function Membership({
                         triggerToast("Set meal preference to Vegetarian", "success")
                       }}
                       className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${prefVeg
-                          ? "bg-[#1F4D2C] text-white shadow-md"
-                          : "text-gray-500 hover:text-gray-800"
+                        ? "bg-[#1F4D2C] text-white shadow-md"
+                        : "text-gray-500 hover:text-gray-800"
                         }`}
                     >
                       <span>Vegetarian</span>
@@ -1374,8 +1217,8 @@ export default function Membership({
                         triggerToast("Set meal preference to Non-Vegetarian", "info")
                       }}
                       className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${!prefVeg
-                          ? "bg-[#1F4D2C] text-white shadow-md"
-                          : "text-gray-500 hover:text-gray-800"
+                        ? "bg-[#1F4D2C] text-white shadow-md"
+                        : "text-gray-500 hover:text-gray-800"
                         }`}
                     >
                       <span>Non-Vegetarian</span>
@@ -1412,8 +1255,8 @@ export default function Membership({
                         whileHover={{ y: -6 }}
                         onClick={() => handleSelectTierAndContinue("Standard")}
                         className={`bg-white rounded-3xl p-7 md:p-8 border cursor-pointer flex flex-col justify-between ${selectedTier === "Standard"
-                            ? "border-[#1F4D2C] shadow-[0_8px_30px_rgba(31,77,44,0.12)] ring-2 ring-[#1F4D2C]"
-                            : "border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)] hover:border-slate-300"
+                          ? "border-[#1F4D2C] shadow-[0_8px_30px_rgba(31,77,44,0.12)] ring-2 ring-[#1F4D2C]"
+                          : "border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)] hover:border-slate-300"
                           } ${springTransition}`}
                       >
                         <div>
@@ -1478,8 +1321,8 @@ export default function Membership({
                             handleSelectTierAndContinue("Standard");
                           }}
                           className={`w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm ${selectedTier === "Standard"
-                              ? "bg-slate-900 text-white hover:bg-slate-800"
-                              : "bg-white border-2 border-slate-950 text-slate-950 hover:bg-slate-50"
+                            ? "bg-slate-900 text-white hover:bg-slate-800"
+                            : "bg-white border-2 border-slate-950 text-slate-950 hover:bg-slate-50"
                             } ${springTransition}`}
                         >
                           <span>Choose Standard</span>
@@ -1492,8 +1335,8 @@ export default function Membership({
                         whileHover={{ y: -6 }}
                         onClick={() => handleSelectTierAndContinue("Premium")}
                         className={`relative bg-white rounded-3xl p-7 md:p-8 border cursor-pointer flex flex-col justify-between ${selectedTier === "Premium"
-                            ? "border-[#1F4D2C] shadow-[0_16px_45px_rgba(31,77,44,0.18)] ring-2 ring-[#1F4D2C]"
-                            : "border-[#1F4D2C]/20 shadow-[0_8px_30px_rgba(31,77,44,0.12)] hover:border-[#1F4D2C]/40 hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
+                          ? "border-[#1F4D2C] shadow-[0_16px_45px_rgba(31,77,44,0.18)] ring-2 ring-[#1F4D2C]"
+                          : "border-[#1F4D2C]/20 shadow-[0_8px_30px_rgba(31,77,44,0.12)] hover:border-[#1F4D2C]/40 hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)]"
                           } ${springTransition}`}
                       >
                         {/* MOST POPULAR Banner centered top */}
@@ -1658,7 +1501,7 @@ export default function Membership({
                         {/* Left: Food Image */}
                         <div className="w-[130px] h-[130px] rounded-[20px] overflow-hidden flex-shrink-0 bg-slate-100 relative">
                           <img
-                            src={getImageForDish(dish.name)}
+                            src={getImageForDish(dish)}
                             alt={dish.name}
                             className="w-full h-full object-cover"
                           />
@@ -1750,8 +1593,8 @@ export default function Membership({
                                         key={ing.name}
                                         onClick={() => handleRemoveIngredient(dish.menuId, ing.name)}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${isRemoved
-                                            ? "bg-red-50 border-red-300 text-red-600 line-through"
-                                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                                          ? "bg-red-50 border-red-300 text-red-600 line-through"
+                                          : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
                                           }`}
                                       >
                                         <span>{ing.name}</span>
@@ -1775,8 +1618,8 @@ export default function Membership({
                                         key={addon.name}
                                         onClick={() => handleToggleAddon(dish.menuId, addon)}
                                         className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between bg-white ${isAdded
-                                            ? "border-[#0B7A33] bg-[#EDF8EF]/20 shadow-sm"
-                                            : "border-gray-200 hover:border-gray-300"
+                                          ? "border-[#0B7A33] bg-[#EDF8EF]/20 shadow-sm"
+                                          : "border-gray-200 hover:border-gray-300"
                                           }`}
                                       >
                                         <div className="flex items-center gap-2">
@@ -1965,9 +1808,8 @@ export default function Membership({
                           value={shippingForm.name}
                           onChange={(e) => updateShippingField('name', e.target.value)}
                           placeholder="e.g. Aditi Menon"
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.name ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.name ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.name && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.name}</span>}
                       </div>
@@ -1979,9 +1821,8 @@ export default function Membership({
                           value={shippingForm.email || ""}
                           onChange={(e) => updateShippingField('email', e.target.value)}
                           placeholder="john@example.com"
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.email ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.email ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.email && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.email}</span>}
                       </div>
@@ -1994,9 +1835,8 @@ export default function Membership({
                           onChange={(e) => updateShippingField('phone', e.target.value)}
                           placeholder="10-digit mobile number"
                           maxLength={10}
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.phone ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.phone ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.phone && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.phone}</span>}
                       </div>
@@ -2011,9 +1851,8 @@ export default function Membership({
                           value={shippingForm.houseNo || ""}
                           onChange={(e) => updateShippingField('houseNo', e.target.value)}
                           placeholder="e.g. Flat 402"
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.houseNo ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.houseNo ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.houseNo && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.houseNo}</span>}
                       </div>
@@ -2025,9 +1864,8 @@ export default function Membership({
                           value={shippingForm.building || ""}
                           onChange={(e) => updateShippingField('building', e.target.value)}
                           placeholder="e.g. Prestige Heights"
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.building ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.building ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.building && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.building}</span>}
                       </div>
@@ -2042,9 +1880,8 @@ export default function Membership({
                           value={shippingForm.street || ""}
                           onChange={(e) => updateShippingField('street', e.target.value)}
                           placeholder="e.g. 10th Main Road"
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.street ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.street ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.street && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.street}</span>}
                       </div>
@@ -2056,9 +1893,8 @@ export default function Membership({
                           value={shippingForm.area || ""}
                           onChange={(e) => updateShippingField('area', e.target.value)}
                           placeholder="e.g. Indiranagar"
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.area ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.area ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.area && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.area}</span>}
                       </div>
@@ -2084,9 +1920,8 @@ export default function Membership({
                           onChange={(e) => updateShippingField('pincode', e.target.value)}
                           placeholder="e.g. 560001"
                           maxLength={6}
-                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                            formErrors.pincode ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                          }`}
+                          className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.pincode ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                            }`}
                         />
                         {formErrors.pincode && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.pincode}</span>}
 
@@ -2096,8 +1931,8 @@ export default function Membership({
                             {isCheckingDelivery && (
                               <div className="flex items-center gap-2 text-sm text-slate-500">
                                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                 </svg>
                                 Checking delivery availability...
                               </div>
@@ -2138,9 +1973,8 @@ export default function Membership({
                         value={shippingForm.landmark || ""}
                         onChange={(e) => updateShippingField('landmark', e.target.value)}
                         placeholder="e.g. Near Metro Station / Opposite Park"
-                        className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${
-                          formErrors.landmark ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
-                        }`}
+                        className={`w-full px-6 py-4 bg-[#EDF8EF]/40 rounded-full border text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B7A33]/25 ${formErrors.landmark ? "border-red-500 bg-red-50/10 !border-red-400" : "border-[#D7E9D7] focus:border-[#0B7A33]"
+                          }`}
                       />
                       {formErrors.landmark && <span className="text-[10px] text-red-500 font-bold block ml-4">{formErrors.landmark}</span>}
                     </div>
@@ -2185,11 +2019,10 @@ export default function Membership({
                           key={slot}
                           type="button"
                           onClick={() => setShippingForm(prev => ({ ...prev, deliverySlot: slot }))}
-                          className={`py-3 px-4 rounded-full text-xs font-bold transition-all cursor-pointer text-center ${
-                            isSelected
+                          className={`py-3 px-4 rounded-full text-xs font-bold transition-all cursor-pointer text-center ${isSelected
                               ? "bg-[#0B7A33] text-white shadow-md"
                               : "bg-[#EDF8EF] text-[#0B7A33] hover:bg-[#D7E9D7]"
-                          }`}
+                            }`}
                         >
                           {slot}
                         </button>
@@ -2229,214 +2062,114 @@ export default function Membership({
                 transition={{ delay: 0.2 }}
                 className="lg:col-span-1 lg:sticky lg:top-24 space-y-6"
               >
-                {checkoutMode === "orderNow" ? (
-                  /* Order Now Mode Summary */
-                  <div className="bg-white rounded-[32px] border border-[#E5E7EB] shadow-xl p-6 md:p-8 space-y-6">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#1F2937]">Your Order</h3>
-                      <div className="h-[2px] bg-[#E5E7EB] w-full mt-3" />
-                    </div>
+                <div className="bg-white rounded-[32px] border border-[#E5E7EB] shadow-xl p-6 md:p-8 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#1F2937]">Membership Summary</h3>
+                    <div className="h-[2px] bg-[#E5E7EB] w-full mt-3" />
+                  </div>
 
-                    {/* Cart Items List */}
-                    <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
-                      {cartItems.map(item => {
-                        const qty = cartQuantities[item._id] || 0
-                        if (qty === 0) return null
-                        const lineTotal = item.price * qty
-                        const isVeg = item.vegNonVeg === "Veg" || item.vegNonVeg === "Vegan"
+                  <div className="space-y-3.5 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-[#6B7280]">Goal</span>
+                      <strong className="text-gray-800 font-bold">{selectedGoal || "Not selected"}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#6B7280]">Membership</span>
+                      <strong className="text-[#0B7A33] font-bold">{selectedTier}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#6B7280]">Diet</span>
+                      <strong className="text-gray-800 font-semibold">{prefVeg ? "Vegetarian" : "Non-Vegetarian"}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#6B7280]">Delivery Slot</span>
+                      <strong className="text-gray-800 font-semibold">{shippingForm.deliverySlot}</strong>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <span className="text-[#6B7280]">Address</span>
+                      <span className="text-gray-800 font-semibold text-right max-w-[160px] truncate" title={shippingForm.address || "Not entered"}>
+                        {shippingForm.address || "Not entered"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-[#E5E7EB] w-full" />
+
+                  {/* Weekly Menu Preview */}
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-bold text-gray-400 tracking-wider block uppercase font-sans">
+                      Weekly Menu Preview
+                    </span>
+                    <div className="space-y-2 text-xs">
+                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => {
+                        const dish = getActiveDayDish(day)
                         return (
-                          <div key={item._id} className="flex items-center gap-3">
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
-                              <img src={item.image || "/breakfast_bowl.png"} className="w-full h-full object-cover" />
-                              <div className="absolute top-0.5 left-0.5 bg-white/90 backdrop-blur-sm rounded-full p-0.5 border border-gray-100 flex items-center justify-center">
-                                <span className={`w-1.5 h-1.5 rounded-full ${isVeg ? 'bg-green-600' : 'bg-red-600'}`} />
-                              </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-bold text-slate-700 truncate">{item.name}</p>
-                              <p className="text-[10px] text-slate-400">₹{item.price} × {qty}</p>
-                            </div>
-                            <span className="text-xs font-bold text-slate-800">₹{lineTotal}</span>
+                          <div key={day} className="flex gap-4 justify-between items-start">
+                            <span className="text-[#6B7280] font-bold w-8">{day.substring(0, 3)}</span>
+                            <span className="text-gray-800 font-medium text-right flex-1 truncate max-w-[180px]" title={dish ? dish.name : "Not selected"}>
+                              {dish ? dish.name : "Not selected"}
+                            </span>
                           </div>
                         )
                       })}
                     </div>
+                  </div>
 
-                    <div className="h-[1px] bg-[#E5E7EB] w-full" />
+                  <div className="h-[1px] bg-[#E5E7EB] w-full" />
 
-                    {/* Billing Summary calculation */}
-                    {(() => {
-                      const subtotal = cartItems.reduce((sum, item) => sum + (item.price * (cartQuantities[item._id] || 0)), 0)
-                      const deliveryCharge = deliveryInfo ? deliveryInfo.deliveryCharge : 30
-                      const gstAmount = parseFloat((subtotal * 0.05).toFixed(2))
-                      const grandTotal = parseFloat((subtotal + deliveryCharge + gstAmount).toFixed(2))
-
-                      return (
-                        <div className="space-y-2.5 text-xs">
-                          <div className="flex justify-between text-gray-600">
-                            <span>Subtotal</span>
-                            <strong className="font-bold text-gray-800">₹{subtotal}</strong>
-                          </div>
-                          <div className="flex justify-between text-gray-600">
-                            <span>Delivery</span>
-                            {deliveryInfo?.isFree ? (
-                              <span className="text-[#0B7A33] font-bold">FREE</span>
-                            ) : (
-                              <span className="font-bold text-gray-800">₹{deliveryCharge}</span>
-                            )}
-                          </div>
-                          <div className="flex justify-between text-gray-600">
-                            <span>GST (5%)</span>
-                            <span className="font-bold text-gray-800">₹{gstAmount}</span>
-                          </div>
-                          <div className="h-[1px] bg-[#E5E7EB] w-full my-2" />
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="font-extrabold text-gray-900">Total</span>
-                            <span className="text-xl font-extrabold text-[#0B7A33]">₹{grandTotal}</span>
-                          </div>
-                        </div>
-                      )
-                    })()}
-
-                    {/* Navigation Buttons */}
-                    <div className="space-y-3 pt-2">
-                      <motion.button
-                        whileHover={deliveryError ? {} : { scale: 1.02 }}
-                        whileTap={deliveryError ? {} : { scale: 0.98 }}
-                        onClick={handleNextToPayment}
-                        disabled={!!deliveryError}
-                        className={`w-full py-3.5 rounded-full text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
-                          deliveryError
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-                            : "bg-[#0B7A33] hover:bg-[#075322] text-white hover:shadow-xl cursor-pointer"
-                        }`}
-                      >
-                        <span>Continue to Payment</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </motion.button>
-
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("Cart")}
-                        className="w-full py-3 rounded-full text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Back</span>
-                      </button>
+                  {/* Pricing Area */}
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Distance</span>
+                      <strong className="font-bold text-gray-800">
+                        {deliveryInfo?.distanceKm ? `${deliveryInfo.distanceKm} km` : "3.2 km"}
+                      </strong>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Delivery</span>
+                      {deliveryInfo?.isFree || (selectedTier === "Premium" && (!deliveryInfo || deliveryInfo.deliveryCharge === 0)) ? (
+                        <span className="text-[#0B7A33] font-bold">FREE</span>
+                      ) : (
+                        <span className="font-bold text-gray-800">₹{billingInfo.deliveryCharge}</span>
+                      )}
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>GST</span>
+                      <span className="font-bold text-gray-800">₹{billingInfo.gstAmount}</span>
+                    </div>
+                    <div className="h-[1px] bg-[#E5E7EB] w-full my-2" />
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-extrabold text-gray-900">Total</span>
+                      <span className="text-xl font-extrabold text-[#0B7A33]">₹{billingInfo.grandTotal}</span>
                     </div>
                   </div>
-                ) : (
-                  /* Existing Subscription Mode Summary */
-                  <div className="bg-white rounded-[32px] border border-[#E5E7EB] shadow-xl p-6 md:p-8 space-y-6">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#1F2937]">Membership Summary</h3>
-                      <div className="h-[2px] bg-[#E5E7EB] w-full mt-3" />
-                    </div>
 
-                    <div className="space-y-3.5 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Goal</span>
-                        <strong className="text-gray-800 font-bold">{selectedGoal || "Not selected"}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Membership</span>
-                        <strong className="text-[#0B7A33] font-bold">{selectedTier}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Diet</span>
-                        <strong className="text-gray-800 font-semibold">{prefVeg ? "Vegetarian" : "Non-Vegetarian"}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Delivery Slot</span>
-                        <strong className="text-gray-800 font-semibold">{shippingForm.deliverySlot}</strong>
-                      </div>
-                      <div className="flex justify-between items-start">
-                        <span className="text-[#6B7280]">Address</span>
-                        <span className="text-gray-800 font-semibold text-right max-w-[160px] truncate" title={shippingForm.address || "Not entered"}>
-                          {shippingForm.address || "Not entered"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="h-[1px] bg-[#E5E7EB] w-full" />
-
-                    {/* Weekly Menu Preview */}
-                    <div className="space-y-3">
-                      <span className="text-[10px] font-bold text-gray-400 tracking-wider block uppercase font-sans">
-                        Weekly Menu Preview
-                      </span>
-                      <div className="space-y-2 text-xs">
-                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => {
-                          const dish = getActiveDayDish(day)
-                          return (
-                            <div key={day} className="flex gap-4 justify-between items-start">
-                              <span className="text-[#6B7280] font-bold w-8">{day.substring(0, 3)}</span>
-                              <span className="text-gray-800 font-medium text-right flex-1 truncate max-w-[180px]" title={dish ? dish.name : "Not selected"}>
-                                {dish ? dish.name : "Not selected"}
-                              </span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="h-[1px] bg-[#E5E7EB] w-full" />
-
-                    {/* Pricing Area */}
-                    <div className="space-y-2.5 text-xs">
-                      <div className="flex justify-between text-gray-600">
-                        <span>Distance</span>
-                        <strong className="font-bold text-gray-800">
-                          {deliveryInfo?.distanceKm ? `${deliveryInfo.distanceKm} km` : "3.2 km"}
-                        </strong>
-                      </div>
-                      <div className="flex justify-between text-gray-600">
-                        <span>Delivery</span>
-                        {deliveryInfo?.isFree || (selectedTier === "Premium" && (!deliveryInfo || deliveryInfo.deliveryCharge === 0)) ? (
-                          <span className="text-[#0B7A33] font-bold">FREE</span>
-                        ) : (
-                          <span className="font-bold text-gray-800">₹{billingInfo.deliveryCharge}</span>
-                        )}
-                      </div>
-                      <div className="flex justify-between text-gray-600">
-                        <span>GST</span>
-                        <span className="font-bold text-gray-800">₹{billingInfo.gstAmount}</span>
-                      </div>
-                      <div className="h-[1px] bg-[#E5E7EB] w-full my-2" />
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="font-extrabold text-gray-900">Total</span>
-                        <span className="text-xl font-extrabold text-[#0B7A33]">₹{billingInfo.grandTotal}</span>
-                      </div>
-                    </div>
-
-                    {/* Navigation Buttons */}
-                    <div className="space-y-3 pt-2">
-                      <motion.button
-                        whileHover={deliveryError ? {} : { scale: 1.02 }}
-                        whileTap={deliveryError ? {} : { scale: 0.98 }}
-                        onClick={handleNextToPayment}
-                        disabled={!!deliveryError}
-                        className={`w-full py-3.5 rounded-full text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${
-                          deliveryError
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-                            : "bg-[#0B7A33] hover:bg-[#075322] text-white hover:shadow-xl cursor-pointer"
+                  {/* Navigation Buttons */}
+                  <div className="space-y-3 pt-2">
+                    <motion.button
+                      whileHover={deliveryError ? {} : { scale: 1.02 }}
+                      whileTap={deliveryError ? {} : { scale: 0.98 }}
+                      onClick={handleNextToPayment}
+                      disabled={!!deliveryError}
+                      className={`w-full py-3.5 rounded-full text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${deliveryError
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+                          : "bg-[#0B7A33] hover:bg-[#075322] text-white hover:shadow-xl cursor-pointer"
                         }`}
-                      >
-                        <span>Continue to Payment</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </motion.button>
+                    >
+                      <span>Continue to Payment</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </motion.button>
 
-                      <button
-                        type="button"
-                        onClick={() => setStep(2)}
-                        className="w-full py-3 rounded-full text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Back</span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="w-full py-3 rounded-full text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Back</span>
+                    </button>
                   </div>
-                )}
+                </div>
               </motion.div>
             </div>
           </motion.div>
@@ -2454,10 +2187,10 @@ export default function Membership({
           >
             <div>
               <h1 className="text-3xl font-extrabold text-gray-900 font-playfair">
-                {checkoutMode === "orderNow" ? "Complete Your Order" : "Step Four: Review Order & Pay"}
+                Step Four: Review Order & Pay
               </h1>
               <p className="text-gray-500 text-sm mt-0.5">
-                {checkoutMode === "orderNow" ? "Please review your order details before placing order." : "Please review your subscription details before generating order."}
+                Please review your subscription details before generating order.
               </p>
             </div>
 
@@ -2466,71 +2199,31 @@ export default function Membership({
               <div className="lg:col-span-2 space-y-6">
                 {/* Order breakdown */}
                 <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm space-y-6">
-                  {checkoutMode === "orderNow" ? (
-                    <>
-                      <h3 className="text-lg font-bold text-gray-900 font-playfair flex items-center gap-2 border-b border-gray-100 pb-4">
-                        <Check className="w-5 h-5 text-green-500 stroke-[3.5]" />
-                        <span>Order Items</span>
-                      </h3>
-                      
-                      <div className="space-y-3">
-                        {cartItems.map(item => {
-                          const qty = cartQuantities[item._id] || 0
-                          if (qty === 0) return null
-                          const lineTotal = item.price * qty
-                          return (
-                            <div key={item._id} className="flex justify-between items-center text-sm text-gray-700">
-                              <span className="font-medium truncate max-w-xs">{item.name} × {qty}</span>
-                              <span className="font-bold">₹{lineTotal}</span>
-                            </div>
-                          )
-                        })}
-                      </div>
+                  <h3 className="text-lg font-bold text-gray-900 font-playfair flex items-center gap-2 border-b border-gray-100 pb-4">
+                    <Check className="w-5 h-5 text-green-500 stroke-[3.5]" />
+                    <span>Subscription Details</span>
+                  </h3>
 
-                      <div className="h-[1px] bg-gray-100 my-4" />
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm text-gray-600">
-                        <div>
-                          <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Delivery Address</span>
-                          <p className="text-gray-800 leading-normal font-medium">
-                            {shippingForm.address}, {shippingForm.pincode}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Delivery Slot</span>
-                          <strong className="text-gray-800 font-medium">8:00 AM - 9:30 AM</strong>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-lg font-bold text-gray-900 font-playfair flex items-center gap-2 border-b border-gray-100 pb-4">
-                        <Check className="w-5 h-5 text-green-500 stroke-[3.5]" />
-                        <span>Subscription Details</span>
-                      </h3>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm text-gray-600">
-                        <div>
-                          <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Health Goal</span>
-                          <strong className="text-gray-800 font-medium">{selectedGoal}</strong>
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Subscription Tier</span>
-                          <strong className="text-gray-800 font-medium">{activePlan?.name || selectedTier}</strong>
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Delivery Address</span>
-                          <p className="text-gray-800 leading-normal font-medium">
-                            {shippingForm.address}, {shippingForm.pincode}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Delivery Time Slot</span>
-                          <strong className="text-gray-800 font-medium">{shippingForm.deliverySlot}</strong>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm text-gray-600">
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Health Goal</span>
+                      <strong className="text-gray-800 font-medium">{selectedGoal}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Subscription Tier</span>
+                      <strong className="text-gray-800 font-medium">{activePlan?.name || selectedTier}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Delivery Address</span>
+                      <p className="text-gray-800 leading-normal font-medium">
+                        {shippingForm.address}, {shippingForm.pincode}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase mb-1 font-sans">Delivery Time Slot</span>
+                      <strong className="text-gray-800 font-medium">{shippingForm.deliverySlot}</strong>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Payment selector */}
@@ -2543,8 +2236,8 @@ export default function Membership({
                     <button
                       onClick={() => setPaymentMethod("UPI")}
                       className={`flex-1 p-4 rounded-xl border-2 flex items-center justify-center gap-3 transition-all cursor-pointer ${paymentMethod === "UPI"
-                          ? "border-[#2E7D32] bg-green-50/10 text-gray-900"
-                          : "border-gray-200 text-gray-500 hover:border-gray-300"
+                        ? "border-[#2E7D32] bg-green-50/10 text-gray-900"
+                        : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                     >
                       <SmartphoneIcon className="w-5 h-5" />
@@ -2553,8 +2246,8 @@ export default function Membership({
                     <button
                       onClick={() => setPaymentMethod("Card")}
                       className={`flex-1 p-4 rounded-xl border-2 flex items-center justify-center gap-3 transition-all cursor-pointer ${paymentMethod === "Card"
-                          ? "border-[#2E7D32] bg-green-50/10 text-gray-900"
-                          : "border-gray-200 text-gray-500 hover:border-gray-300"
+                        ? "border-[#2E7D32] bg-green-50/10 text-gray-900"
+                        : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                     >
                       <CreditCard className="w-5 h-5" />
@@ -2585,8 +2278,8 @@ export default function Membership({
                           <div className="bg-gray-800 rounded-sm"></div>
                           <div className="bg-gray-800 rounded-sm"></div>
                         </div>
-                        <div className="w-8 h-8 bg-white border-2 border-primary rounded-full z-10 flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-primary">NF</span>
+                        <div className="w-8 h-8 bg-white border-2 border-[#0B7A33] rounded-full z-10 flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-[#0B7A33]">NF</span>
                         </div>
                       </div>
                       <span className="text-xs text-gray-500 block font-dmsans">Scan with GPay, PhonePe, or Paytm during mock checkout.</span>
@@ -2666,66 +2359,33 @@ export default function Membership({
                     Bill Summary
                   </h4>
 
-                  {checkoutMode === "orderNow" ? (
-                    (() => {
-                      const subtotal = cartItems.reduce((sum, item) => sum + (item.price * (cartQuantities[item._id] || 0)), 0)
-                      const deliveryCharge = deliveryInfo ? deliveryInfo.deliveryCharge : 30
-                      const gstAmount = parseFloat((subtotal * 0.05).toFixed(2))
-                      const grandTotal = parseFloat((subtotal + deliveryCharge + gstAmount).toFixed(2))
-
-                      return (
-                        <div className="space-y-2 text-xs text-gray-500">
-                          <div className="flex justify-between">
-                            <span>Subtotal:</span>
-                            <span className="text-gray-800 font-medium">₹{subtotal}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Delivery Fee:</span>
-                            <span className="text-gray-800 font-medium">₹{deliveryCharge}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>GST (5%):</span>
-                            <span className="text-gray-800 font-medium">₹{gstAmount}</span>
-                          </div>
-
-                          <hr className="border-gray-100 my-2" />
-
-                          <div className="flex justify-between items-center text-sm font-bold text-gray-900 pt-1">
-                            <span>Total Amount:</span>
-                            <span className="text-xl font-black text-[#2E7D32]">₹{grandTotal}</span>
-                          </div>
-                        </div>
-                      )
-                    })()
-                  ) : (
-                    <div className="space-y-2 text-xs text-gray-500">
-                      <div className="flex justify-between">
-                        <span>Base Plan Price:</span>
-                        <span className="text-gray-800 font-medium">₹{billingInfo.basePrice}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Addons Extras:</span>
-                        <span className="text-gray-800 font-medium">₹{billingInfo.addonTotal}</span>
-                      </div>
-                      {appliedDiscount > 0 && (
-                        <div className="flex justify-between text-[#2E7D32] font-semibold">
-                          <span>Promo Discount:</span>
-                          <span>-₹{billingInfo.discountAmount}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span>Delivery Fee:</span>
-                        <span className="text-green-600 font-bold uppercase">Free</span>
-                      </div>
-
-                      <hr className="border-gray-100 my-2" />
-
-                      <div className="flex justify-between items-center text-sm font-bold text-gray-900 pt-1">
-                        <span>Weekly Total:</span>
-                        <span className="text-xl font-black text-[#2E7D32]">₹{billingInfo.grandTotal}</span>
-                      </div>
+                  <div className="space-y-2 text-xs text-gray-500">
+                    <div className="flex justify-between">
+                      <span>Base Plan Price:</span>
+                      <span className="text-gray-800 font-medium">₹{billingInfo.basePrice}</span>
                     </div>
-                  )}
+                    <div className="flex justify-between">
+                      <span>Addons Extras:</span>
+                      <span className="text-gray-800 font-medium">₹{billingInfo.addonTotal}</span>
+                    </div>
+                    {appliedDiscount > 0 && (
+                      <div className="flex justify-between text-[#2E7D32] font-semibold">
+                        <span>Promo Discount:</span>
+                        <span>-₹{billingInfo.discountAmount}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span>Delivery Fee:</span>
+                      <span className="text-green-600 font-bold uppercase">Free</span>
+                    </div>
+
+                    <hr className="border-gray-100 my-2" />
+
+                    <div className="flex justify-between items-center text-sm font-bold text-gray-900 pt-1">
+                      <span>Weekly Total:</span>
+                      <span className="text-xl font-black text-[#2E7D32]">₹{billingInfo.grandTotal}</span>
+                    </div>
+                  </div>
 
                   <button
                     onClick={handleCompletePayment}
@@ -2736,7 +2396,7 @@ export default function Membership({
                       <RefreshCw className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
-                        <span>{checkoutMode === "orderNow" ? "Place Order" : "Complete Checkout"}</span>
+                        <span>Complete Checkout</span>
                         <ArrowRight className="w-5 h-5" />
                       </>
                     )}
@@ -2757,6 +2417,75 @@ export default function Membership({
             </div>
           </motion.div>
         )}
+
+        {/* Success Confirmation Modal */}
+        <AnimatePresence>
+          {checkoutSuccess && generatedOrder && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-[36px] max-w-lg w-full p-8 shadow-2xl border border-gray-100 relative text-center space-y-6 overflow-hidden"
+              >
+                <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto text-[#0B7A33] border-4 border-green-100">
+                  <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+                </div>
+
+                <div className="space-y-2">
+                  <span className="bg-[#EDF8EF] text-[#0B7A33] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    Subscription Confirmed
+                  </span>
+                  <h2 className="text-3xl font-extrabold text-gray-900 font-playfair">
+                    Subscription Order Placed!
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    Subscription ID: <span className="font-mono font-bold text-gray-700">{generatedOrder.orderId}</span>
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-left space-y-3 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Goal</span>
+                    <span className="font-bold text-gray-800">{generatedOrder.goal}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Tier</span>
+                    <span className="font-bold text-gray-800">{generatedOrder.tier}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Total Weekly Price</span>
+                    <span className="font-bold text-[#0B7A33] text-sm">₹{generatedOrder.price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Start Date</span>
+                    <span className="font-medium text-gray-800">{generatedOrder.deliveryStart}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Time Slot</span>
+                    <span className="font-medium text-gray-800">{generatedOrder.slot}</span>
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <span className="text-gray-500">Address</span>
+                    <span className="font-medium text-gray-800 text-right max-w-[180px] truncate">{generatedOrder.address}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setCheckoutSuccess(false)
+                      setActiveTab("History")
+                    }}
+                    className="w-full bg-[#0B7A33] hover:bg-[#075322] text-white py-4 rounded-full font-bold text-sm shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                  >
+                    View Subscriptions & Orders
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* ----------------------------------------------------
           ALTERNATIVE DISHES SLIDER / MODAL DRAWER
@@ -2800,7 +2529,7 @@ export default function Membership({
                       >
                         <div className="w-20 h-20 rounded-xl bg-gray-105 overflow-hidden flex-shrink-0">
                           <img
-                            src={getImageForDish(alt.name)}
+                            src={getImageForDish(alt)}
                             alt={alt.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />

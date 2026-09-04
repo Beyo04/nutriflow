@@ -35,7 +35,7 @@ app.get('/nutriflow', (req, res) => {
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGO_URI, { maxPoolSize: 20 });
         console.log("MongoDB Connected successfully");
 
         const PORT = process.env.PORT || 8000;

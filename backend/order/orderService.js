@@ -203,12 +203,35 @@ export const placeOrderService = async (userId, body, userIsSubscribed) => {
             finalDeliveryDate = subscriptionStartDate;
         }
 
-        // Retrieve Cart
+        // Retrieve Cart or construct from payload items
+        let cartItemsToProcess = [];
         const cart = await Cart.findOne({ user: userId })
             .populate('items.menuItem')
             .session(session);
 
-        if (!cart || cart.items.length === 0) {
+        if (cart && cart.items && cart.items.length > 0) {
+            cartItemsToProcess = cart.items;
+        } else if (body.items && Array.isArray(body.items) && body.items.length > 0) {
+            const Menu = mongoose.model('Menu');
+            for (const item of body.items) {
+                if (!item.menuItemId || !mongoose.Types.ObjectId.isValid(item.menuItemId)) {
+                    const error = new Error('Invalid menu item, please refresh and try again.');
+                    error.status = 400;
+                    throw error;
+                }
+                const menuItem = await Menu.findById(item.menuItemId).session(session);
+                if (menuItem) {
+                    cartItemsToProcess.push({
+                        menuItem,
+                        quantity: item.quantity || 1,
+                        adjustedPrice: item.price !== undefined ? item.price : menuItem.price,
+                        customizations: { removedIngredients: [], addedAddons: [] }
+                    });
+                }
+            }
+        }
+
+        if (cartItemsToProcess.length === 0) {
             const error = new Error('Your cart is empty. Add items to place an order.');
             error.status = 400;
             throw error;
@@ -216,7 +239,7 @@ export const placeOrderService = async (userId, body, userIsSubscribed) => {
 
         // STRICT LOOP BEFORE PRICING MATH TO CHECK IF ANY CART ITEM HAS CUSTOMIZATIONS.
         // If it does, and userIsSubscribed === false, throw a 403 error blocking the order.
-        for (const item of cart.items) {
+        for (const item of cartItemsToProcess) {
             const hasCustomizations = (item.customizations?.removedIngredients?.length > 0) || (item.customizations?.addedAddons?.length > 0);
             if (hasCustomizations && !userIsSubscribed) {
                 const error = new Error('Customization is a premium feature available only for subscribed users.');
@@ -229,7 +252,7 @@ export const placeOrderService = async (userId, body, userIsSubscribed) => {
         let subtotal = 0;
         const orderItems = [];
 
-        for (const item of cart.items) {
+        for (const item of cartItemsToProcess) {
             if (!item.menuItem) {
                 const error = new Error('One or more items in your cart are no longer available.');
                 error.status = 400;

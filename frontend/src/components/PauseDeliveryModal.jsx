@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Info, CheckCircle, AlertTriangle } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 // TIMEZONE SAFE FORMATTER (Fixes the IST to UTC date shift bug)
 const toLocalDateString = (date) => {
@@ -12,7 +12,8 @@ const toLocalDateString = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, onPauseSuccess }) {
+export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, onPauseSuccess, activeSubscriptionId }) {
+  console.log('[PauseDeliveryModal DEBUG] received activeSubscriptionId prop:', activeSubscriptionId);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedRescheduledDate, setSelectedRescheduledDate] = useState(null);
   const [rescheduleOptions, setRescheduleOptions] = useState([]);
@@ -23,12 +24,10 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
   const [pauseInfo, setPauseInfo] = useState({
     remainingPauses: 2,
     usedPauses: 0,
-    weeklyPausesLimit: 2,
+    pausesLimit: 2,
     pausedDates: [],
-    subscriptionStartDate: "", // NEW
-    subscriptionEndDate: "",   // NEW
-    weekStart: "",
-    weekEnd: ""
+    subscriptionStartDate: "",
+    subscriptionEndDate: "",
   });
 
   const [tomorrowMeal] = useState({
@@ -50,11 +49,10 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
 
   const checkIsPaused = (date) => {
     if (!date || !pauseInfo.pausedDates) return false;
-    const dateStr = toLocalDateString(date); // FIXED
+    const dateStr = toLocalDateString(date);
     return pauseInfo.pausedDates.includes(dateStr);
   };
 
-  // NEW: Check if date is within subscription bounds
   const checkIsOutsideSubscription = (date) => {
     if (!pauseInfo.subscriptionStartDate || !pauseInfo.subscriptionEndDate) return false;
     const dateStr = toLocalDateString(date);
@@ -91,12 +89,13 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
     setSelectedDate(preSelect || list[0]);
   };
 
+  // Generate only the next 3 weekday options after selectedDate
   useEffect(() => {
     if (selectedDate) {
       const options = [];
       let count = 0;
       let dayOffset = 1;
-      while (count < 5) {
+      while (count < 3) {
         const d = new Date(selectedDate);
         d.setDate(d.getDate() + dayOffset);
         const dayOfWeek = d.getDay();
@@ -115,26 +114,31 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
   }, [selectedDate, pauseInfo.pausedDates]);
 
   const fetchStatus = async () => {
-    const token = localStorage.getItem('nutriflow_token') || localStorage.getItem('token') || localStorage.getItem('auth_token');
-    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-
+    console.log('[PauseDeliveryModal] fetchStatus called. activeSubscriptionId =', activeSubscriptionId);
+    if (!activeSubscriptionId) {
+      console.warn('[PauseDeliveryModal] No activeSubscriptionId — skipping fetchStatus');
+      return;
+    }
     try {
-      const res = await axios.get('http://localhost:8000/nutriflow/subscriptions/pauses/status', config);
+      const url = `/subscriptions/pauses/status?subscriptionId=${activeSubscriptionId}`;
+      console.log('[PauseDeliveryModal] GET', url);
+      const res = await api.get(url);
+      console.log('[PauseDeliveryModal] Pause status response:', res.data);
       if (res.data && res.data.success) {
         const data = res.data.data;
         setPauseInfo({
-          remainingPauses: data.remainingPauses ?? 2,
-          usedPauses: data.usedPauses ?? 0,
-          weeklyPausesLimit: data.weeklyPausesLimit ?? 2,
-          pausedDates: data.pausedDates || [],
-          subscriptionStartDate: data.subscriptionStartDate || "", // NEW
-          subscriptionEndDate: data.subscriptionEndDate || "",     // NEW
-          weekStart: data.weekStart || "",
-          weekEnd: data.weekEnd || ""
+          remainingPauses: data.canPause ? (2 - (data.pausesUsed ?? 0)) : 0,
+          usedPauses: data.pausesUsed ?? 0,
+          pausesLimit: data.pausesLimit ?? 2,
+          pausedDates: (data.pauseableDays || [])
+            .filter(d => !d.canPause)
+            .map(d => d.date),
+          subscriptionStartDate: data.subscriptionStartDate || "",
+          subscriptionEndDate: data.subscriptionEndDate || "",
         });
       }
     } catch (err) {
-      console.error("Error fetching pause status", err);
+      console.error('[PauseDeliveryModal] fetchStatus error:', err.response?.data || err.message || err);
     }
   };
 
@@ -142,11 +146,29 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
     if (isOpen) {
       setStatusMsg("");
       setIsError(false);
-      fetchStatus().then(() => {
-        generateDatesList();
-      });
+
+      // 1. Generate date list IMMEDIATELY — no delay
+      generateDatesList();
+
+      // 2. Fetch backend status safely & independently
+      if (activeSubscriptionId) {
+        fetchStatus();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, activeSubscriptionId]);
+
+  // Re-verify selectedDate validity when pauseInfo loads
+  useEffect(() => {
+    if (isOpen && datesList.length > 0 && selectedDate) {
+      const isCurrentDisabled = checkIsPaused(selectedDate) || checkIsPastCutoff(selectedDate) || checkIsOutsideSubscription(selectedDate);
+      if (isCurrentDisabled) {
+        const validDate = datesList.find(d => !checkIsPaused(d) && !checkIsPastCutoff(d) && !checkIsOutsideSubscription(d));
+        if (validDate) {
+          setSelectedDate(validDate);
+        }
+      }
+    }
+  }, [pauseInfo]);
 
   const handlePauseConfirm = async () => {
     if (!selectedDate) return;
@@ -154,9 +176,16 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
     setStatusMsg("");
     setIsError(false);
 
+    if (!activeSubscriptionId) {
+      setIsError(true);
+      setStatusMsg("Unable to identify your subscription. Please refresh the page and try again.");
+      setIsPausing(false);
+      return;
+    }
+
     if (pauseInfo.remainingPauses <= 0) {
       setIsError(true);
-      setStatusMsg("No pauses remaining this week.");
+      setStatusMsg("No pauses remaining for this subscription.");
       setIsPausing(false);
       return;
     }
@@ -175,57 +204,59 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
       return;
     }
 
-    const token = localStorage.getItem('nutriflow_token') || localStorage.getItem('token') || localStorage.getItem('auth_token');
-    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+    if (!selectedRescheduledDate) {
+      setIsError(true);
+      setStatusMsg("Please select a reschedule date before confirming.");
+      setIsPausing(false);
+      return;
+    }
 
-    // FIXED: Using toLocalDateString instead of toISOString().split('T')[0]
-    const pauseDateStr = toLocalDateString(selectedDate) + "T00:00:00";
-    const rescheduledDateStr = selectedRescheduledDate ? toLocalDateString(selectedRescheduledDate) + "T00:00:00" : undefined;
+    const originalDateStr = toLocalDateString(selectedDate);
+    const rescheduledDateStr = toLocalDateString(selectedRescheduledDate);
+
+    const payload = {
+      subscriptionId: activeSubscriptionId,
+      originalDate: originalDateStr,
+      rescheduledDate: rescheduledDateStr,
+    };
 
     try {
-      const res = await axios.post('http://localhost:8000/nutriflow/subscriptions/pauses', {
-        pauseDate: pauseDateStr,
-        rescheduledDate: rescheduledDateStr
-      }, config);
+      const res = await api.post('/subscriptions/pauses', payload, { timeout: 8000 });
 
       if (res.data && res.data.success) {
-        const remaining = res.data.data.weeklyPausesLimit - res.data.data.weeklyPausesUsed;
+        const remaining = (payload.subscriptionId ? (2 - (res.data.data?.pausesUsed ?? 0)) : 0);
         setStatusMsg("Successfully paused delivery!");
         onPauseSuccess?.({
           remainingPauses: remaining,
-          pausedDate: pauseDateStr,
+          pausedDate: originalDateStr,
           rescheduledDate: rescheduledDateStr,
           action: 'paused'
         });
         setTimeout(() => onClose(), 1200);
+      } else {
+        setIsError(true);
+        setStatusMsg(res.data?.message || "Failed to pause delivery.");
       }
     } catch (err) {
       setIsError(true);
-      
-      // Log the full response for debugging
-      console.error("Frontend Pause Error Details:", err.response);
-      
       let errorMessage = "Failed to pause delivery. Please try again.";
-      
-      if (err.response && err.response.data) {
+
+      if (err.code === 'ECONNABORTED') {
+        errorMessage = "Request timed out. Please check your network and try again.";
+      } else if (err.response && err.response.data) {
         const data = err.response.data;
-        
-        // If data is a string (e.g., HTML 500 page), don't use it
+
         if (typeof data === 'string') {
           errorMessage = `Server returned an error (Status ${err.response.status}). Check backend logs.`;
-        } 
-        // Handle standard error { message: "..." }
-        else if (data.message) {
+        } else if (data.message) {
           errorMessage = data.message;
-        } 
-        // Handle Joi validation errors { error: { message: "..." } }
-        else if (data.error && data.error.message) {
+        } else if (data.error && data.error.message) {
           errorMessage = data.error.message;
         }
       } else if (err.message) {
-        errorMessage = err.message; // Network error or timeout
+        errorMessage = err.message;
       }
-      
+
       setStatusMsg(errorMessage);
     } finally {
       setIsPausing(false);
@@ -237,16 +268,16 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
     setStatusMsg("");
     setIsError(false);
 
-    const token = localStorage.getItem('nutriflow_token') || localStorage.getItem('token') || localStorage.getItem('auth_token');
-    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+    const resumePayload = {
+      subscriptionId: activeSubscriptionId,
+      originalDate: dateStr,
+    };
 
     try {
-      const res = await axios.post('http://localhost:8000/nutriflow/subscriptions/pauses/resume', {
-        pauseDate: dateStr + "T00:00:00"
-      }, config);
+      const res = await api.post('/subscriptions/pauses/resume', resumePayload, { timeout: 8000 });
 
       if (res.data && res.data.success) {
-        const remaining = res.data.data.weeklyPausesLimit - res.data.data.weeklyPausesUsed;
+        const remaining = (res.data.data.pausesLimit ?? 2) - (res.data.data.pausesUsed ?? 0);
         setStatusMsg("Successfully resumed delivery!");
         onPauseSuccess?.({
           remainingPauses: remaining,
@@ -258,6 +289,7 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
       }
     } catch (err) {
       setIsError(true);
+      console.error('[PauseDeliveryModal] Resume Error:', err.response?.data || err.message || err);
       setStatusMsg(err.response?.data?.message || "Failed to resume delivery.");
     } finally {
       setIsPausing(false);
@@ -269,11 +301,6 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
     const [y, m, d] = str.split('-');
     const dateObj = new Date(y, m - 1, d);
     return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-  };
-
-  const formatWeekRange = () => {
-    if (!pauseInfo.weekStart || !pauseInfo.weekEnd) return "";
-    return `(Week of ${formatDateStr(pauseInfo.weekStart)} – ${formatDateStr(pauseInfo.weekEnd)})`;
   };
 
   if (!isOpen) return null;
@@ -304,7 +331,14 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {!activeSubscriptionId ? (
+            <div className="bg-[#F8FAF5] rounded-3xl p-8 border border-[#D7E9D7] text-center space-y-3">
+              <div className="w-6 h-6 border-2 border-[#1F4D2C] border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-xs text-slate-500 font-medium">Loading subscription details...</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-[#F8FAF5] rounded-3xl p-5 border border-[#D7E9D7] flex flex-col justify-between">
               <div className="flex gap-3.5 items-start">
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-gray-100 flex-shrink-0">
@@ -329,8 +363,8 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
                     const isSelected = selectedDate && selectedDate.toDateString() === date.toDateString();
                     const isPaused = checkIsPaused(date);
                     const isPastCutoff = checkIsPastCutoff(date);
-                    const isOutside = checkIsOutsideSubscription(date); // NEW
-                    const isDisabled = isPaused || isPastCutoff || isOutside; // NEW
+                    const isOutside = checkIsOutsideSubscription(date);
+                    const isDisabled = isPaused || isPastCutoff || isOutside;
                     const dayName = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
                     const dateNum = date.getDate();
 
@@ -375,7 +409,7 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
 
           {selectedDate && !checkIsPaused(selectedDate) && !checkIsPastCutoff(selectedDate) && !checkIsOutsideSubscription(selectedDate) && (
             <div className="bg-[#F8FAF5] rounded-3xl p-5 border border-[#D7E9D7] text-left">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Reschedule Meal to:</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Reschedule Meal to (next 3 available days):</span>
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none flex-nowrap">
                 {rescheduleOptions.map((resDate) => {
                   const isResSelected = selectedRescheduledDate && selectedRescheduledDate.toDateString() === resDate.toDateString();
@@ -449,7 +483,7 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="text-[#1F4D2C]">📊</span>
-                  <p className="leading-relaxed"><strong className="font-bold text-slate-700">Usage Limit:</strong> Up to 2 times per week.</p>
+                  <p className="leading-relaxed"><strong className="font-bold text-slate-700">Usage Limit:</strong> 2 pauses total for this subscription (lifetime).</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -459,18 +493,17 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
                 </div>
                 {pauseInfo.remainingPauses > 0 ? (
                   <div className="flex flex-col gap-1 text-green-700 font-bold bg-[#EAF7EB] px-3 py-1.5 rounded-xl border border-[#1F4D2C]/10">
-                    <div className="flex items-center gap-1"><span>💡</span><p>{pauseInfo.remainingPauses} pauses remaining this week.</p></div>
-                    <p className="text-[9px] text-green-600 font-medium">{formatWeekRange()}</p>
+                    <div className="flex items-center gap-1"><span>💡</span><p>{pauseInfo.remainingPauses} of {pauseInfo.pausesLimit} pauses remaining for this subscription.</p></div>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-1 text-red-600 font-bold bg-red-50 px-3 py-1.5 rounded-xl border border-red-100">
-                    <div className="flex items-center gap-1"><span>⚠️</span><p>No pauses remaining this week.</p></div>
-                    <p className="text-[9px] text-red-500 font-medium">{formatWeekRange()}</p>
+                    <div className="flex items-center gap-1"><span>⚠️</span><p>No pauses remaining for this subscription.</p></div>
                   </div>
                 )}
               </div>
             </div>
           </div>
+          </>)}
 
           {statusMsg && (
             <div className={`p-4 rounded-2xl flex items-center gap-2.5 text-xs font-bold border ${isError ? 'bg-red-50 text-red-600 border-red-100' : 'bg-[#EAF7EB] text-[#1F4D2C] border-[#1F4D2C]/10'}`}>
@@ -480,7 +513,7 @@ export default function PauseDeliveryModal({ isOpen, onClose, preSelectedDate, o
           )}
 
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} disabled={isPausing} className="flex-1 py-3.5 rounded-2xl bg-white border border-gray-200 text-slate-600 text-sm font-bold cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition text-center">
+            <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl bg-white border border-gray-200 text-slate-600 text-sm font-bold cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition text-center">
               Keep Delivery
             </button>
             <button

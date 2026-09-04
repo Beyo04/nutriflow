@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { MessageCircle, X, Send, Check, Bot } from 'lucide-react'
+import { MessageCircle, X, Send, Check, Bot, ScanLine } from 'lucide-react'
 
 const INITIAL_MESSAGES = [
   {
@@ -515,6 +515,14 @@ export default function ChatBot() {
               onSubmit={handleSend}
               className="p-3 bg-white border-t border-slate-200 flex items-center gap-2 shrink-0"
             >
+              <button
+                type="button"
+                aria-label="Scan barcode"
+                onClick={() => console.log('Scan button clicked — feature not yet implemented')}
+                className="w-9 h-9 rounded-full bg-[#E8F5E9] text-[#1F4D2C] flex items-center justify-center hover:bg-[#C8E6C9] active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                <ScanLine className="w-4 h-4" />
+              </button>
               <input
                 type="text"
                 value={inputValue}

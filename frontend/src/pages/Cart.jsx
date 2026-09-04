@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, Minus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react';
 
-const Cart = ({ setActiveTab, onOpenOTP, cartItems, cartQuantities, updateCartQty, clearCart, setCheckoutMode }) => {
+const Cart = ({ setActiveTab, onOpenOTP, cartItems, cartQuantities, updateCartQty, clearCart }) => {
   const totalItems = Object.values(cartQuantities).reduce((sum, qty) => sum + qty, 0);
 
   const handleCheckout = () => {
@@ -11,8 +11,7 @@ const Cart = ({ setActiveTab, onOpenOTP, cartItems, cartQuantities, updateCartQt
       onOpenOTP?.();
       return;
     }
-    setCheckoutMode("orderNow");
-    setActiveTab("Membership");
+    setActiveTab("OrderCheckout");
   };
 
   const getTagColor = (goal) => {

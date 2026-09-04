@@ -1,34 +1,39 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Target, Crown, Truck, BotMessageSquare, Check, Clock, Sparkles } from "lucide-react"
+import { Target, Crown, Truck, BotMessageSquare, Check, Clock, Sparkles, CheckCircle2 } from "lucide-react"
+
+import weightGainImg from '../assets/weightgain_Non_img.png'
+import flexibleMembershipImg from '../assets/flexible membership (2).png'
+import freshDailyDeliveryImg from '../assets/fresh daily delivery (2).png'
+import aiHealthAssistantImg from '../assets/AIHealthAssistant.png'
 
 const HowItWorks = () => {
   const features = [
     {
       title: "Goal-Based Nutrition",
       desc: "Choose breakfasts tailored to your health goals.",
-      image: "/nutrition_benefit.png",
+      image: weightGainImg,
       bgColor: "#FCF7F0",
       illustration: "nutrition"
     },
     {
       title: "Flexible Membership",
       desc: "Plan & Customize meals, Pause deliveries with ease.",
-      image: "/membership_benefit.png",
+      image: flexibleMembershipImg,
       bgColor: "#F5F5FA",
       illustration: "membership"
     },
     {
       title: "Fresh Daily Delivery",
       desc: "Fresh breakfasts, wherever you need them.",
-      image: "/delivery_benefit.png",
+      image: freshDailyDeliveryImg,
       bgColor: "#EAF3EC",
       illustration: "delivery"
     },
     {
       title: "AI Health Assistant",
       desc: "Get instant AI-powered nutrition guidance and meal insights.",
-      image: "/ai_assistant_benefit.png",
+      image: aiHealthAssistantImg,
       bgColor: "#F0F7F4",
       illustration: "chat"
     }
@@ -78,203 +83,179 @@ const HowItWorks = () => {
 
           {/* BACK FACE */}
           <div
-            className="absolute inset-0 overflow-hidden rounded-[32px] border border-slate-100/80 flex flex-col p-4 pt-5 text-left"
+            className="absolute inset-0 overflow-hidden rounded-[32px] border border-slate-100/80 flex flex-col p-6 text-left justify-between"
             style={{
               backfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
               backgroundColor: item.bgColor
             }}
           >
-            <h3 className="text-[15px] font-bold text-slate-900 text-center mb-3">
-              {item.title}
-            </h3>
+            {item.illustration === "nutrition" && (
+              <div className="flex-1 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Personalization</span>
+                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-4">Find Your Perfect Breakfast</h3>
 
-            {/* ILLUSTRATION AREA */}
-            <div className="flex-1 bg-white/60 rounded-2xl p-3.5 backdrop-blur-sm border border-white/80">
-
-              {item.illustration === "nutrition" && (
-                <div className="space-y-3.5">
-                  {/* Calorie header */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Today's Intake</span>
-                    <span className="text-[11px] font-bold text-[#1F4D2C]">1,286 kcal</span>
-                  </div>
-
-                  {/* Protein bar */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        <span className="text-[11px] font-medium text-slate-600">Protein</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-700">85g / 100g</span>
-                    </div>
-                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" style={{ width: "85%" }} />
-                    </div>
-                  </div>
-
-                  {/* Carbs bar */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span className="text-[11px] font-medium text-slate-600">Carbs</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-700">120g / 150g</span>
-                    </div>
-                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full" style={{ width: "80%" }} />
-                    </div>
-                  </div>
-
-                  {/* Fat bar */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-rose-400" />
-                        <span className="text-[11px] font-medium text-slate-600">Fat</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-700">38g / 50g</span>
-                    </div>
-                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-rose-300 to-rose-400 rounded-full" style={{ width: "76%" }} />
-                    </div>
-                  </div>
-
-                  {/* Bottom stat */}
-                  <div className="flex items-center justify-center gap-1.5 pt-1 border-t border-slate-100">
-                    <Sparkles className="w-3 h-3 text-[#4DB552]" />
-                    <span className="text-[10px] font-semibold text-[#1F4D2C]">AI Match: 98%</span>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Choose Your Goal</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="text-[11px] bg-[#1F4D2C] text-white px-3 py-1 rounded-full font-bold">High Protein</span>
+                    <span className="text-[11px] bg-[#EAF7EB]/60 text-slate-700 border border-[#1F4D2C]/10 px-3 py-1 rounded-full font-semibold">Weight Loss</span>
+                    <span className="text-[11px] bg-[#EAF7EB]/60 text-slate-700 border border-[#1F4D2C]/10 px-3 py-1 rounded-full font-semibold">Weight Gain</span>
+                    <span className="text-[11px] bg-[#EAF7EB]/60 text-slate-700 border border-[#1F4D2C]/10 px-3 py-1 rounded-full font-semibold">Balanced Diet</span>
+                    <span className="text-[11px] bg-[#EAF7EB]/60 text-slate-700 border border-[#1F4D2C]/10 px-3 py-1 rounded-full font-semibold">Diabetic Friendly</span>
                   </div>
                 </div>
-              )}
 
-              {item.illustration === "membership" && (
-                <div className="space-y-2">
-                  {/* Weekly */}
-                  <div className="flex items-center justify-between bg-white rounded-xl px-3 py-2.5 border border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center">
-                        <Target className="w-3.5 h-3.5 text-slate-400" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-700 leading-none">Weekly</p>
-                        <p className="text-[9px] text-slate-400 mt-0.5">Per week</p>
-                      </div>
-                    </div>
-                    <span className="text-[12px] font-bold text-slate-700">$15<span className="text-[9px] font-normal text-slate-400">/wk</span></span>
-                  </div>
-
-                  {/* Monthly - Popular */}
-                  <div className="flex items-center justify-between bg-white rounded-xl px-3 py-2.5 border-2 border-[#4DB552] relative">
-                    <div className="absolute -top-2 right-2 bg-[#4DB552] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide">Popular</div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-[#EAF7EB] flex items-center justify-center">
-                        <Crown className="w-3.5 h-3.5 text-[#4DB552]" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-700 leading-none">Monthly</p>
-                        <p className="text-[9px] text-[#4DB552] mt-0.5 font-medium">Save 35%</p>
-                      </div>
-                    </div>
-                    <span className="text-[12px] font-bold text-[#1F4D2C]">$39<span className="text-[9px] font-normal text-slate-400">/mo</span></span>
-                  </div>
-
-                  {/* Quarterly */}
-                  <div className="flex items-center justify-between bg-white rounded-xl px-3 py-2.5 border border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center">
-                        <Sparkles className="w-3.5 h-3.5 text-slate-400" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-700 leading-none">Quarterly</p>
-                        <p className="text-[9px] text-[#4DB552] mt-0.5 font-medium">Save 47%</p>
-                      </div>
-                    </div>
-                    <span className="text-[12px] font-bold text-slate-700">Rs.149<span className="text-[9px] font-normal text-slate-400">/qtr</span></span>
-                  </div>
-
-                  {/* Cancel note */}
-                  <p className="text-[9px] text-slate-400 text-center pt-1">Cancel or pause anytime</p>
-                </div>
-              )}
-
-              {item.illustration === "delivery" && (
-                <div className="space-y-0">
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="w-6 h-6 rounded-full bg-[#4DB552] flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 text-white" />
-                      </div>
-                      <div className="w-0.5 h-5 bg-[#4DB552]/30" />
-                    </div>
-                    <div className="pb-3">
-                      <p className="text-[11px] font-semibold text-slate-700">06:00 AM — Fresh Prep</p>
-                      <p className="text-[9px] text-slate-400 mt-0.5">Chef-cooked with local ingredients</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="w-6 h-6 rounded-full bg-[#4DB552] flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 text-white" />
-                      </div>
-                      <div className="w-0.5 h-5 bg-[#4DB552]/30" />
-                    </div>
-                    <div className="pb-3">
-                      <p className="text-[11px] font-semibold text-slate-700">07:00 AM — Cold Chain Ship</p>
-                      <p className="text-[9px] text-slate-400 mt-0.5">Insulated bag, 4°C constant</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center flex-shrink-0 animate-pulse">
-                        <Truck className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-semibold text-[#1F4D2C]">07:15 AM — At Your Door</p>
-                      <p className="text-[9px] text-amber-500 font-medium mt-0.5">Arriving in ~15 min 🚗</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {item.illustration === "chat" && (
-                <div className="space-y-2.5">
-                  {/* User bubble */}
-                  <div className="flex justify-end">
-                    <div className="bg-slate-100 rounded-2xl rounded-br-md px-3 py-2 max-w-[85%]">
-                      <p className="text-[10px] text-slate-700 leading-relaxed">Can I have a snack today?</p>
-                    </div>
-                  </div>
-
-                  {/* AI bubble */}
+                <div>
+                  <div className="w-full h-[1px] bg-slate-150 my-3" />
                   <div className="flex gap-2">
-                    <div className="w-5 h-5 rounded-full bg-[#1F4D2C] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Sparkles className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="bg-white rounded-2xl rounded-bl-md px-3 py-2 border border-slate-100 max-w-[85%]">
-                      <p className="text-[10px] text-slate-600 leading-relaxed">Yes! You have ~200kcal left. Try Greek yogurt + blueberries 🫐</p>
-                    </div>
-                  </div>
-
-                  {/* Quick replies */}
-                  <div className="flex gap-1.5 pl-7 pt-0.5">
-                    <span className="text-[9px] bg-[#EAF7EB] text-[#1F4D2C] font-medium px-2.5 py-1 rounded-full cursor-pointer hover:bg-[#d4f0d6] transition-colors">Sounds good 👍</span>
-                    <span className="text-[9px] bg-slate-50 text-slate-500 font-medium px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">Alternative</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Nutritionist Curated</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Goal Focused</span>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-            </div>
+            {item.illustration === "membership" && (
+              <div className="flex-1 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Membership</span>
+                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-4">Your Week, Your Way</h3>
 
-            {/* Bottom description */}
-            <p className="text-[11px] font-medium text-slate-500 leading-relaxed text-center mt-3 px-1">
-              {item.desc}
-            </p>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[11px] font-semibold text-slate-500">Weekly Planner</span>
+                    <span className="text-[11px] font-bold text-[#1F4D2C]">Standard Plan</span>
+                  </div>
+
+                  {/* Days Row */}
+                  <div className="flex justify-between items-center mb-4 bg-white/60 p-2.5 rounded-2xl border border-white/80">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold text-slate-400">MON</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold text-slate-400">TUE</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold text-slate-400">WED</span>
+                      <span className="w-4 h-4 rounded-full border border-amber-600/40 bg-amber-50 flex items-center justify-center text-[10px] font-extrabold text-amber-700">II</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold text-slate-400">THU</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold text-slate-400">FRI</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                  </div>
+
+                  {/* Bullets */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <span>Skip or pause deliveries anytime</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <span>Adjust macros daily</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="w-full h-[1px] bg-slate-150 my-3" />
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Flexible</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Weekdays</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Premium</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {item.illustration === "delivery" && (
+              <div className="flex-1 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Delivery</span>
+                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-4">Prepared Fresh Every Morning</h3>
+
+                  {/* Vertical timeline */}
+                  <div className="relative border-l-2 border-emerald-600/20 ml-2 pl-4 space-y-4 my-2">
+                    <div className="relative">
+                      <div className="absolute -left-[23px] top-1 w-2.5 h-1 bg-[#1F4D2C] rounded-full" />
+                      <span className="text-xs font-bold text-slate-500">Freshly Prepared</span>
+                    </div>
+                    <div className="relative">
+                      <div className="absolute -left-[23px] top-1 w-2.5 h-1 bg-[#1F4D2C] rounded-full" />
+                      <span className="text-xs font-bold text-slate-500">Hygienically Packed</span>
+                    </div>
+                    <div className="relative">
+                      <div className="absolute -left-[25px] top-0.5 w-3.5 h-2.5 bg-white border-2 border-emerald-600 rounded-full flex items-center justify-center" />
+                      <span className="text-xs font-extrabold text-emerald-700">Out for Delivery</span>
+                    </div>
+                    <div className="relative">
+                      <div className="absolute -left-[23px] top-1.5 w-2.5 h-1 bg-slate-300 rounded-full" />
+                      <span className="text-xs font-bold text-slate-400">Timely Delivery</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="w-full h-[1px] bg-slate-150 my-3" />
+                  <div className="flex gap-2">
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Fresh</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Reliable</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Doorstep</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {item.illustration === "chat" && (
+              <div className="flex-1 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">AI Assistant</span>
+                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-4">Smart Nutrition Guidance</h3>
+
+                  {/* Chat Mockup */}
+                  <div className="space-y-3">
+                    {/* User Bubble */}
+                    <div className="flex justify-end">
+                      <div className="bg-[#EAF7EB] text-slate-700 text-[11px] font-semibold px-3.5 py-2 rounded-2xl rounded-tr-sm max-w-[85%] shadow-xs">
+                        Recommend a healthy breakfast for muscle gain.
+                      </div>
+                    </div>
+
+                    {/* Assistant Bubble */}
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-[#1F4D2C] block">Assistant</span>
+                      <div className="bg-white border border-emerald-600/10 text-slate-700 text-[11px] px-3.5 py-2 rounded-2xl rounded-tl-sm max-w-[90%] shadow-xs space-y-0.5">
+                        <p className="font-bold text-slate-800">I recommend Herb Grilled Chicken Sandwich</p>
+                        <p className="text-[#1F4D2C] font-extrabold">420 kcal  32g Protein</p>
+                      </div>
+                    </div>
+
+                    {/* Quick replies */}
+                    <div className="flex gap-1 flex-wrap">
+                      <span className="text-[9px] border border-slate-200 bg-white text-slate-500 italic px-2 py-0.5 rounded-md">Add fiber?</span>
+                      <span className="text-[9px] border border-slate-200 bg-white text-slate-500 italic px-2 py-0.5 rounded-md">other option?</span>
+                      <span className="text-[9px] border border-slate-200 bg-white text-slate-500 italic px-2 py-0.5 rounded-md">Allergens?</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="w-full h-[1px] bg-slate-150 my-3" />
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">AI Powered</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Personalized</span>
+                    <span className="text-[10px] bg-white/80 text-slate-600 px-3 py-1.5 rounded-full border border-slate-100 font-semibold shadow-xs">Nutrition Insights</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
         </motion.div>

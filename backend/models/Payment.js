@@ -43,7 +43,7 @@ const paymentSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['UPI', 'Credit Card', 'Debit Card'],
+      enum: ['UPI', 'Credit Card', 'Debit Card', ''],
       default: '',
     },
     // Simulated Razorpay IDs — generated server-side, never trusted from frontend

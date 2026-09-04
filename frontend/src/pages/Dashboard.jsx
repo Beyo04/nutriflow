@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Bell, 
-  Pause, 
-  Crown, 
-  Droplets, 
-  History, 
-  PhoneCall, 
-  Compass, 
-  Calendar, 
-  CheckCircle, 
+import {
+  Bell,
+  Pause,
+  Crown,
+  Droplets,
+  History,
+  PhoneCall,
+  Compass,
+  Calendar,
+  CheckCircle,
   ArrowRight,
   Info,
   User,
   LogOut
 } from 'lucide-react';
-import axios from 'axios';
+import api, { dedupedGet } from '../api';
 import PauseDeliveryModal from '../components/PauseDeliveryModal';
 
 export default function Dashboard({ setActiveTab }) {
@@ -23,6 +23,7 @@ export default function Dashboard({ setActiveTab }) {
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPauseModalOpen, setIsPauseModalOpen] = useState(false);
+  const [activeSubscriptionId, setActiveSubscriptionId] = useState(null);
 
   // Time-based greeting helper
   const getGreeting = () => {
@@ -42,63 +43,68 @@ export default function Dashboard({ setActiveTab }) {
 
   // Fetch Dashboard Stats & Profile
   useEffect(() => {
+    console.log('[Dashboard] MOUNTED');
+    setUserData({
+      name: "user",
+      tier: "Premium",
+      renewalDate: "15 Jul 2025",
+      weeklyPrice: 1199,
+      isSubscribed: true
+    });
+    setDashboardData({
+      user: { name: "user", tier: "Premium", renewalDate: "15 Jul 2025", weeklyPrice: 1199, isSubscribed: true },
+      todayMeal: {
+        name: "Berry Granola Bowl",
+        description: "Fresh seasonal berries, organic Greek yogurt, and house-made honey granola with Kerala spices.",
+        image: "/Apple Cinnamon Overnight Oats.png",
+        calories: 420,
+        protein: 22,
+        arrivalTime: "7:45 AM Arrival",
+        ingredients: ["Fresh Berries", "Greek Yogurt", "Honey Granola", "Chia Seeds", "Almond Milk"]
+      },
+      weeklyMenu: [
+        { day: "Monday", dish: "Berry Granola Bowl", image: "/Apple Cinnamon Overnight Oats.png", calories: 420, protein: 22, active: true },
+        { day: "Tuesday", dish: "Herbed Paneer Sandwich", image: "/Balanced Diet - Herbed Paneer Sandwich.png", calories: 410, protein: 24 },
+        { day: "Wednesday", dish: "Greek Yogurt Protein Bowl", image: "/Apple Cinnamon Overnight Oats.png", calories: 390, protein: 20 },
+        { day: "Thursday", dish: "Herb Chicken Salad", image: "/Balanced Diet - Cottage Cheese salad.png", calories: 360, protein: 22 },
+        { day: "Friday", dish: "Chocolate Protein Smoothie", image: "/Banana Protein Smoothie.png", calories: 450, protein: 28 }
+      ],
+      insights: { weeklyCalories: 2050, calorieGoal: 2750, weeklyProtein: 152, proteinGoal: 250, streakDays: 12 }
+    });
+    const controller = new AbortController();
     const fetchDashboard = async () => {
-      setIsLoading(true);
-      const token = localStorage.getItem('nutriflow_token') || localStorage.getItem('token') || localStorage.getItem('auth_token');
-      
-      // Setup default configuration headers if authenticated
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-
       try {
-        // Parallel fetch profile + current subscription menu
-        const [userRes, menuRes] = await Promise.all([
-          axios.get('/nutriflow/users/me', config).catch(() => null),
-          axios.get('/nutriflow/orders/subscription/current', config).catch(() => null)
+        const [userRes, profileDashRes, subRes] = await Promise.all([
+          dedupedGet('/auth/profile', { timeout: 10000, signal: controller.signal }).catch(() => null),
+          dedupedGet('/profile/dashboard', { timeout: 10000, signal: controller.signal }).catch(() => null),
+          dedupedGet('/subscriptions/my', { timeout: 10000, signal: controller.signal }).catch(() => null)
         ]);
-
-        let userObj = { name: "user", tier: "Premium", renewalDate: "15 Jul 2025", weeklyPrice: 1199, isSubscribed: true };
-        if (userRes && userRes.data && userRes.data.data) {
+        if (controller.signal.aborted) return;
+        if (subRes?.data?.success && subRes.data.data?._id) {
+          setActiveSubscriptionId(String(subRes.data.data._id));
+        }
+        if (userRes?.data?.data) {
           const apiUser = userRes.data.data;
-          userObj = {
+          setUserData({
             name: apiUser.name || "user",
             tier: apiUser.subscriptionTier || "Premium",
             renewalDate: apiUser.subscriptionEnd ? new Date(apiUser.subscriptionEnd).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : "15 Jul 2025",
             weeklyPrice: apiUser.subscriptionTier === "Premium" ? 1199 : 899,
             isSubscribed: !!apiUser.isSubscribed
-          };
+          });
         }
-        setUserData(userObj);
-
-        // Map API response to UI or use fallbacks
-        const FALLBACK_DASHBOARD = {
-          user: userObj,
-          todayMeal: {
-            name: "Berry Granola Bowl",
-            description: "Fresh seasonal berries, organic Greek yogurt, and house-made honey granola with Kerala spices.",
-            image: "/Apple Cinnamon Overnight Oats.png",
-            calories: 420, 
-            protein: 22,
-            arrivalTime: "7:45 AM Arrival",
-            ingredients: ["Fresh Berries", "Greek Yogurt", "Honey Granola", "Chia Seeds", "Almond Milk"]
-          },
-          weeklyMenu: [
-            { day: "Monday", dish: "Berry Granola Bowl", image: "/Apple Cinnamon Overnight Oats.png", calories: 420, protein: 22, active: true },
-            { day: "Tuesday", dish: "Herbed Paneer Sandwich", image: "/Balanced Diet - Herbed Paneer Sandwich.png", calories: 410, protein: 24 },
-            { day: "Wednesday", dish: "Greek Yogurt Protein Bowl", image: "/Apple Cinnamon Overnight Oats.png", calories: 390, protein: 20 },
-            { day: "Thursday", dish: "Herb Chicken Salad", image: "/Balanced Diet - Cottage Cheese salad.png", calories: 360, protein: 22 },
-            { day: "Friday", dish: "Chocolate Protein Smoothie", image: "/Banana Protein Smoothie.png", calories: 450, protein: 28 }
-          ],
-          insights: { weeklyCalories: 2050, calorieGoal: 2750, weeklyProtein: 152, proteinGoal: 250, streakDays: 12 }
-        };
-
-        setDashboardData(FALLBACK_DASHBOARD);
       } catch (err) {
-        // Silent catch defaults
+        console.error('[Dashboard] fetchDashboard failed:', err);
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
     fetchDashboard();
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const handleLogout = () => {
@@ -122,15 +128,15 @@ export default function Dashboard({ setActiveTab }) {
   const { todayMeal, weeklyMenu, insights } = dashboardData;
 
   return (
-    <div className="bg-[#FAFBFF] min-h-screen relative font-sans overflow-x-hidden pt-20 pb-28">
+    <div className="bg-primary-light min-h-screen relative font-sans overflow-x-hidden pt-20 pb-28">
       {/* Glow Effects */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] rounded-full bg-[#EDF8EF]/70 opacity-80 blur-[130px] pointer-events-none -z-10" />
 
       <div className="max-w-6xl mx-auto px-6 space-y-8">
-        
+
         {/* 1. TOP GREETING BAR */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
@@ -144,7 +150,7 @@ export default function Dashboard({ setActiveTab }) {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="flex items-center gap-3"
@@ -153,8 +159,8 @@ export default function Dashboard({ setActiveTab }) {
               <Bell className="w-5 h-5" />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#2E7D32]" />
             </button>
-            
-            <button 
+
+            <button
               onClick={handleLogout}
               className="px-4 py-2 rounded-full bg-white border border-gray-200 text-xs font-bold text-red-500 hover:bg-red-50 hover:border-red-100 flex items-center gap-1.5 transition cursor-pointer shadow-sm"
             >
@@ -166,18 +172,18 @@ export default function Dashboard({ setActiveTab }) {
 
         {/* 2. TODAY'S RECOMMENDED MEALS CARD & ACTION SQUARES */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          
+
           {/* LEFT: Recommended Meal Card */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
             className="lg:col-span-8 bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-center"
           >
             <div className="w-full md:w-56 aspect-square rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0">
-              <img 
-                src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=600&fit=crop" 
-                alt={todayMeal.name} 
+              <img
+                src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=600&fit=crop"
+                alt={todayMeal.name}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -210,7 +216,7 @@ export default function Dashboard({ setActiveTab }) {
               </div>
 
               {/* View Details CTA */}
-              <button 
+              <button
                 onClick={() => setActiveTab("Order Today")}
                 className="w-full md:w-auto px-6 py-3 bg-[#1F4D2C] hover:bg-[#173C22] text-white rounded-2xl font-bold text-xs cursor-pointer transition shadow-md shadow-green-950/10 block text-center"
               >
@@ -220,13 +226,13 @@ export default function Dashboard({ setActiveTab }) {
           </motion.div>
 
           {/* RIGHT: Visual Action Squares */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="lg:col-span-4 grid grid-cols-2 gap-4"
           >
-            <button 
+            <button
               onClick={() => setIsPauseModalOpen(true)}
               className="bg-[#F8FAF5] border border-gray-100 rounded-3xl p-6 flex flex-col items-center justify-center gap-3 group hover:border-[#1F4D2C] hover:shadow-sm transition cursor-pointer"
             >
@@ -236,7 +242,7 @@ export default function Dashboard({ setActiveTab }) {
               <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Pause Delivery</span>
             </button>
 
-            <button 
+            <button
               onClick={() => setActiveTab("History")}
               className="bg-[#F8FAF5] border border-gray-100 rounded-3xl p-6 flex flex-col items-center justify-center gap-3 group hover:border-[#1F4D2C] hover:shadow-sm transition cursor-pointer"
             >
@@ -246,7 +252,7 @@ export default function Dashboard({ setActiveTab }) {
               <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">History</span>
             </button>
 
-            <button 
+            <button
               onClick={() => window.dispatchEvent(new CustomEvent('open-nutriflow-chatbot'))}
               className="bg-[#F8FAF5] border border-gray-100 rounded-3xl p-6 flex flex-col items-center justify-center gap-3 group hover:border-[#1F4D2C] hover:shadow-sm transition cursor-pointer"
             >
@@ -256,7 +262,7 @@ export default function Dashboard({ setActiveTab }) {
               <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">AI Nutrition</span>
             </button>
 
-            <button 
+            <button
               onClick={() => setActiveTab("Contact Us")}
               className="bg-[#F8FAF5] border border-gray-100 rounded-3xl p-6 flex flex-col items-center justify-center gap-3 group hover:border-[#1F4D2C] hover:shadow-sm transition cursor-pointer"
             >
@@ -269,7 +275,7 @@ export default function Dashboard({ setActiveTab }) {
         </div>
 
         {/* 3. WEEKLY MEAL PLAN */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25 }}
@@ -277,7 +283,7 @@ export default function Dashboard({ setActiveTab }) {
         >
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-base font-extrabold text-slate-800 uppercase tracking-wider">This Week's Plan</h2>
-            <button 
+            <button
               onClick={() => setActiveTab("Membership")}
               className="text-xs text-[#1F4D2C] hover:text-[#173C22] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors"
             >
@@ -289,7 +295,7 @@ export default function Dashboard({ setActiveTab }) {
           <div className="flex gap-4 overflow-x-auto pb-3 snap-x scrollbar-none">
             {weeklyMenu.map((item, idx) => {
               const isToday = item.day.toLowerCase() === todayDayName.toLowerCase() || (todayDayName === "Sunday" && item.day === "Monday") || (todayDayName === "Saturday" && item.day === "Monday");
-              
+
               // Fallback placeholder images
               const imageMap = [
                 "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=225&fit=crop", // Mon
@@ -300,18 +306,17 @@ export default function Dashboard({ setActiveTab }) {
               ];
 
               return (
-                <div 
+                <div
                   key={item.day}
-                  className={`min-w-[170px] flex-1 bg-white rounded-2xl border overflow-hidden flex-shrink-0 snap-start transition-all ${
-                    isToday 
-                      ? "border-2 border-[#1F4D2C] shadow-md ring-2 ring-[#1F4D2C]/10" 
+                  className={`min-w-[170px] flex-1 bg-white rounded-2xl border overflow-hidden flex-shrink-0 snap-start transition-all ${isToday
+                      ? "border-2 border-[#1F4D2C] shadow-md ring-2 ring-[#1F4D2C]/10"
                       : "border-gray-100 shadow-sm"
-                  }`}
+                    }`}
                 >
                   <div className="aspect-[4/3] relative bg-slate-50 overflow-hidden">
-                    <img 
-                      src={imageMap[idx]} 
-                      alt={item.dish} 
+                    <img
+                      src={imageMap[idx]}
+                      alt={item.dish}
                       className="w-full h-full object-cover"
                     />
                     {isToday && (
@@ -338,7 +343,7 @@ export default function Dashboard({ setActiveTab }) {
         </motion.div>
 
         {/* 4. BOTTOM 3-COLUMN METRICS GRID */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.35 }}
@@ -405,7 +410,7 @@ export default function Dashboard({ setActiveTab }) {
               </p>
             </div>
 
-            <button 
+            <button
               onClick={() => window.dispatchEvent(new CustomEvent('open-nutriflow-chatbot'))}
               className="w-full mt-6 py-3 bg-white text-[#1F4D2C] hover:bg-green-50 rounded-2xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-sm"
             >
@@ -435,7 +440,7 @@ export default function Dashboard({ setActiveTab }) {
                 <p className="text-[11px] text-slate-400">Your membership renews automatically next week.</p>
               </div>
 
-              <button 
+              <button
                 onClick={() => setActiveTab("History")}
                 className="w-full py-3 border border-gray-200 hover:border-[#1F4D2C] hover:text-[#1F4D2C] text-slate-500 rounded-2xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors text-center"
               >
@@ -457,7 +462,11 @@ export default function Dashboard({ setActiveTab }) {
 
         {/* BOTTOM EXTRA BANNER FIELDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-[#F8FAF5] border border-gray-100 rounded-3xl p-5 text-left flex items-center justify-between hover:shadow-sm transition-all group cursor-pointer" onClick={() => setIsPauseModalOpen(true)}>
+          <div
+            className={`bg-[#F8FAF5] border border-gray-100 rounded-3xl p-5 text-left flex items-center justify-between transition-all group ${!activeSubscriptionId ? "opacity-50 cursor-not-allowed" : "hover:shadow-sm cursor-pointer"
+              }`}
+            onClick={() => activeSubscriptionId && setIsPauseModalOpen(true)}
+          >
             <div>
               <h4 className="text-xs font-bold text-slate-800">Pause tomorrow's breakfast?</h4>
               <p className="text-[10px] text-slate-400 mt-0.5">We need 12 hours notice for delivery updates.</p>
@@ -476,10 +485,10 @@ export default function Dashboard({ setActiveTab }) {
 
       </div>
 
-      {/* Pause Delivery Overlay Modal */}
-      <PauseDeliveryModal 
+      <PauseDeliveryModal
         isOpen={isPauseModalOpen}
         onClose={() => setIsPauseModalOpen(false)}
+        activeSubscriptionId={activeSubscriptionId}
         onPauseSuccess={(rem, date) => {
           // Update local state dynamically
           if (dashboardData) {

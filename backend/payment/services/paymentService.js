@@ -33,7 +33,7 @@ export async function createPaymentOrder(userId, { orderId, subscriptionId }) {
     orderRef = order._id;
 
   } else if (subscriptionId) {
-    const subscription = await Subscription.findOne({ subscriptionId }).lean();
+    const subscription = await Subscription.findById(subscriptionId).lean();
 
     if (!subscription) {
       throw { statusCode: 404, message: 'Subscription not found.' };

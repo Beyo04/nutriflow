@@ -309,15 +309,15 @@ export default function ContactUs({ setActiveTab }) {
       </section>
 
       {/* 3. FAQ SECTION */}
-      <section className="py-20 max-w-5xl mx-auto px-6 text-center space-y-12">
+      {/* <section className="py-20 max-w-5xl mx-auto px-6 text-center space-y-12">
         <div className="space-y-2">
           <span className="text-[10px] font-bold text-[#1F4D2C] uppercase tracking-[0.2em] block">FAQ</span>
           <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Everything you might be wondering.</h2>
         </div>
 
-        {/* Two column FAQ wrapper */}
+       
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          {/* Left: Category toggle buttons */}
+         
           <div className="md:col-span-4 flex flex-col gap-2 text-left">
             <button 
               onClick={() => { setFaqCategory("membership"); setOpenFaq(null); }}
@@ -351,7 +351,7 @@ export default function ContactUs({ setActiveTab }) {
             </button>
           </div>
 
-          {/* Right: Accordion */}
+         
           <div className="md:col-span-8 space-y-3 text-left">
             {FAQ_DATA[faqCategory].map((faq, idx) => {
               const isOpen = openFaq === idx;
@@ -381,7 +381,7 @@ export default function ContactUs({ setActiveTab }) {
             })}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* 4. OFFICE LOCATION SECTION */}
       <section className="py-20 max-w-6xl mx-auto px-6 text-left">
@@ -423,7 +423,7 @@ export default function ContactUs({ setActiveTab }) {
         </div>
       </section>
 
-      <Footer setActiveTab={setActiveTab} />
+      {/* <Footer setActiveTab={setActiveTab} /> */}
     </div>
   );
 }

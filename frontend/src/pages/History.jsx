@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Crown, Clock, Check, X, Download, Filter } from 'lucide-react';
-import axios from 'axios';
+import api, { getAuthToken } from '../api';
 import Footer from '../components/Footer';
 import PauseDeliveryModal from '../components/PauseDeliveryModal';
 
@@ -79,19 +79,113 @@ export default function History({ setActiveTab }) {
     savings: 420
   };
 
+  const [ordersList, setOrdersList] = useState([]);
+  const [membershipsData, setMembershipsData] = useState(null);
+  const [orderSummary, setOrderSummary] = useState({ totalOrders: 0, totalSpent: 0, savings: 0 });
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoading(true);
+      const token = getAuthToken();
+      if (!token) {
+        setOrdersList([]);
+        setMembershipsData({ active: null, previous: [] });
+        setOrderSummary({ totalOrders: 0, totalSpent: 0, savings: 0 });
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const [ordersRes, subRes] = await Promise.all([
+          api.get('/orders').catch(err => {
+            console.error('[History] Orders fetch failed:', err.response?.data || err.message || err);
+            return null;
+          }),
+          api.get('/subscriptions/my').catch(err => {
+            console.error('[History] Subscriptions fetch failed:', err.response?.data || err.message || err);
+            return null;
+          })
+        ]);
+
+        if (ordersRes && ordersRes.data && ordersRes.data.success && Array.isArray(ordersRes.data.data)) {
+          const apiOrders = ordersRes.data.data.map(o => ({
+            _id: o._id,
+            orderNumber: o.orderId || `NT${o._id.slice(-5).toUpperCase()}`,
+            dishName: o.items?.[0]?.dish?.name || o.items?.[0]?.menuItemId?.name || o.orderType || "NutriFlow Meal",
+            dishImage: o.items?.[0]?.dish?.image || o.items?.[0]?.menuItemId?.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&h=150&fit=crop",
+            status: o.status || "Delivered",
+            totalAmount: o.pricing?.grandTotal || o.totalAmount || 0,
+            date: new Date(o.createdAt || Date.now()).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+          }));
+
+          setOrdersList(apiOrders);
+
+          const totalSpent = apiOrders.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+          setOrderSummary({
+            totalOrders: apiOrders.length,
+            totalSpent: Math.round(totalSpent),
+            savings: Math.round(totalSpent * 0.1)
+          });
+        } else {
+          setOrdersList([]);
+          setOrderSummary({ totalOrders: 0, totalSpent: 0, savings: 0 });
+        }
+
+        const activeSubData = subRes?.data?.data || subRes?.data?.subscription;
+        console.log('[HISTORY DEBUG] activeSubData:', activeSubData);
+        console.log('[HISTORY DEBUG] subRes.data:', subRes?.data);
+
+        if (subRes && subRes.data && subRes.data.success && activeSubData) {
+          const sub = activeSubData;
+          const planInfo = sub.planId || sub.plan || {};
+          const isStd = (planInfo.tier || sub.tier || "").includes("Std");
+
+          const rawSubId = sub._id || sub.id || sub.subscriptionId || sub.subscription?._id;
+          console.log('[HISTORY DEBUG] rawSubId resolved to:', rawSubId, 'from sub keys:', Object.keys(sub));
+
+          setMembershipsData({
+            active: {
+              _id: rawSubId ? String(rawSubId) : undefined,
+              tier: isStd ? "Standard" : "Premium",
+              goal: planInfo.goal || sub.goal || "Healthy Meals",
+              plan: planInfo.name || sub.planName || "Weekly Subscription Plan",
+              startDate: sub.startDate ? new Date(sub.startDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : "Active",
+              status: sub.status || "Active",
+              tomorrowSlot: sub.deliveryAddress?.deliveryInstructions || sub.deliverySlot || "7:00 AM - 8:00 AM",
+              completedBreakfasts: sub.completedDays || sub.daysCompleted || 0,
+              totalBreakfasts: planInfo.deliveryDays || sub.totalDays || 5
+            },
+            previous: []
+          });
+        } else {
+          console.log('[HISTORY DEBUG] Falling into NULL branch — subRes.data.success was:', subRes?.data?.success, 'activeSubData was:', activeSubData);
+          setMembershipsData({ active: null, previous: [] });
+        }
+      } catch (err) {
+        setOrdersList([]);
+        setMembershipsData({ active: null, previous: [] });
+        setOrderSummary({ totalOrders: 0, totalSpent: 0, savings: 0 });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
   // Filter lists based on status filter & query
-  const filteredOrders = FALLBACK_ORDERS.filter(order => {
-    const matchesSearch = order.dishName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredOrders = ordersList.filter(order => {
+    const matchesSearch = (order.dishName || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (order.orderNumber || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = statusFilter === "All" || order.status === statusFilter;
     return matchesSearch && matchesFilter;
   });
 
   const filteredMemberships = {
-    active: FALLBACK_MEMBERSHIPS.active.plan.toLowerCase().includes(searchQuery.toLowerCase()) && 
-            (statusFilter === "All" || statusFilter === "Active") ? FALLBACK_MEMBERSHIPS.active : null,
-    previous: FALLBACK_MEMBERSHIPS.previous.filter(p => {
-      const matchesSearch = p.plan.toLowerCase().includes(searchQuery.toLowerCase()) || p.tier.toLowerCase().includes(searchQuery.toLowerCase());
+    active: (membershipsData?.active?.plan || "").toLowerCase().includes(searchQuery.toLowerCase()) && 
+            (statusFilter === "All" || statusFilter === "Active") ? membershipsData?.active : null,
+    previous: (membershipsData?.previous || []).filter(p => {
+      const matchesSearch = (p.plan || "").toLowerCase().includes(searchQuery.toLowerCase()) || (p.tier || "").toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter = statusFilter === "All" || p.status === statusFilter;
       return matchesSearch && matchesFilter;
     })
@@ -205,7 +299,7 @@ export default function History({ setActiveTab }) {
               className="space-y-8"
             >
               {/* Active Membership Section */}
-              {filteredMemberships.active && (
+              {membershipsData?.active ? (
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
                   {/* Left green tag decoration */}
                   <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#1F4D2C]" />
@@ -213,48 +307,53 @@ export default function History({ setActiveTab }) {
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="space-y-4 flex-1">
                       <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">Premium Membership</h2>
+                        <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">{membershipsData.active.tier} Membership</h2>
                         <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-100 px-2.5 py-0.5 rounded-full">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                          <span>Active</span>
+                          <span>{membershipsData.active.status}</span>
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-2">
                         <div>
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">GOAL</span>
-                          <strong className="text-xs text-slate-700 font-extrabold mt-1 block">High Protein</strong>
+                          <strong className="text-xs text-slate-700 font-extrabold mt-1 block">{membershipsData.active.goal || "Healthy Meals"}</strong>
                         </div>
                         <div>
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PLAN</span>
-                          <strong className="text-xs text-slate-700 font-extrabold mt-1 block">Weekly Plan</strong>
+                          <strong className="text-xs text-slate-700 font-extrabold mt-1 block">{membershipsData.active.plan}</strong>
                         </div>
                         <div>
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">STARTED</span>
-                          <strong className="text-xs text-slate-700 font-extrabold mt-1 block">21 Jul 2026</strong>
+                          <strong className="text-xs text-slate-700 font-extrabold mt-1 block">{membershipsData.active.startDate}</strong>
                         </div>
                         <div>
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">NEXT BREAKFAST</span>
-                          <strong className="text-xs text-[#1F4D2C] font-extrabold mt-1 block">Tomorrow 7:00 AM</strong>
+                          <strong className="text-xs text-[#1F4D2C] font-extrabold mt-1 block">Tomorrow {membershipsData.active.tomorrowSlot}</strong>
                         </div>
                       </div>
 
                       {/* Progress */}
                       <div className="space-y-2 pt-4 border-t border-gray-50">
                         <div className="flex justify-between items-end text-[11px] font-semibold text-slate-500">
-                          <span>3 of 5 breakfasts completed</span>
-                          <span className="text-[#1F4D2C] font-bold">73% Progress</span>
+                          <span>{membershipsData.active.completedBreakfasts} of {membershipsData.active.totalBreakfasts} breakfasts completed</span>
+                          <span className="text-[#1F4D2C] font-bold">{Math.round((membershipsData.active.completedBreakfasts / Math.max(1, membershipsData.active.totalBreakfasts)) * 100)}% Progress</span>
                         </div>
                         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#1F4D2C] rounded-full" style={{ width: '73%' }} />
+                          <div className="h-full bg-[#1F4D2C] rounded-full" style={{ width: `${Math.round((membershipsData.active.completedBreakfasts / Math.max(1, membershipsData.active.totalBreakfasts)) * 100)}%` }} />
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto">
                       <button 
-                        onClick={() => setIsPauseModalOpen(true)}
-                        className="flex-1 md:flex-none px-6 py-2.5 bg-[#1F4D2C] hover:bg-[#173C22] text-white rounded-xl text-xs font-bold transition shadow-md shadow-green-950/10 cursor-pointer text-center"
+                        onClick={() => membershipsData?.active?._id && setIsPauseModalOpen(true)}
+                        disabled={!membershipsData?.active?._id}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-xs font-bold transition text-center ${
+                          !membershipsData?.active?._id
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                            : "bg-[#1F4D2C] hover:bg-[#173C22] text-white shadow-md shadow-green-950/10 cursor-pointer"
+                        }`}
                       >
                         Pause
                       </button>
@@ -266,6 +365,18 @@ export default function History({ setActiveTab }) {
                       </button>
                     </div>
                   </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center space-y-3">
+                  <span className="text-4xl block">📋</span>
+                  <h4 className="text-base font-bold text-slate-800">No Active Membership</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">You don't have an active subscription plan right now. Join a weekly plan to enjoy daily fresh breakfasts!</p>
+                  <button 
+                    onClick={() => setActiveTab("Membership")}
+                    className="mt-2 px-6 py-2.5 bg-[#1F4D2C] hover:bg-[#173C22] text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer inline-block"
+                  >
+                    View Membership Plans
+                  </button>
                 </div>
               )}
 
@@ -305,34 +416,48 @@ export default function History({ setActiveTab }) {
               
               {/* Left Order lists */}
               <div className="lg:col-span-8 space-y-4">
-                {filteredOrders.map((order) => (
-                  <div key={order._id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row gap-5 items-center justify-between">
-                    <div className="flex items-center gap-4 w-full sm:w-auto">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-gray-100 flex-shrink-0">
-                        <img src={order.dishImage} alt={order.dishName} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="text-left space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-extrabold text-slate-800 leading-snug">{order.dishName}</h4>
-                          <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                            order.status === "Cancelled" ? "bg-red-50 text-red-600 border border-red-100" : "bg-green-50 text-green-700 border border-green-100"
-                          }`}>
-                            {order.status}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 font-mono font-medium">Order {order.orderNumber} • {order.date}</p>
-                        <strong className="text-sm text-[#1F4D2C] font-extrabold font-mono block">₹{order.totalAmount}</strong>
-                      </div>
-                    </div>
-
+                {filteredOrders.length === 0 ? (
+                  <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center space-y-3">
+                    <span className="text-4xl block">🛍️</span>
+                    <h4 className="text-base font-bold text-slate-800">No orders found</h4>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto">You haven't placed any orders yet with this account. Explore our menu to place your first order!</p>
                     <button 
                       onClick={() => setActiveTab("Order Today")}
-                      className="w-full sm:w-auto px-6 py-2.5 bg-[#1F4D2C] hover:bg-[#173C22] text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
+                      className="mt-2 px-6 py-2.5 bg-[#1F4D2C] hover:bg-[#173C22] text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer inline-block"
                     >
-                      View Details
+                      Explore Menu
                     </button>
                   </div>
-                ))}
+                ) : (
+                  filteredOrders.map((order) => (
+                    <div key={order._id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row gap-5 items-center justify-between">
+                      <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-gray-100 flex-shrink-0">
+                          <img src={order.dishImage} alt={order.dishName} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="text-left space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-extrabold text-slate-800 leading-snug">{order.dishName}</h4>
+                            <span className={`text-[8px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                              order.status === "Cancelled" ? "bg-red-50 text-red-600 border border-red-100" : "bg-green-50 text-green-700 border border-green-100"
+                            }`}>
+                              {order.status}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 font-mono font-medium">Order {order.orderNumber} • {order.date}</p>
+                          <strong className="text-sm text-[#1F4D2C] font-extrabold font-mono block">₹{order.totalAmount}</strong>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={() => setActiveTab("Order Today")}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-[#1F4D2C] hover:bg-[#173C22] text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
 
               {/* Right Summary sidebar */}
@@ -343,15 +468,15 @@ export default function History({ setActiveTab }) {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-400 font-semibold">Orders this month</span>
-                      <strong className="text-slate-800 font-extrabold font-mono">{FALLBACK_ORDER_SUMMARY.totalOrders}</strong>
+                      <strong className="text-slate-800 font-extrabold font-mono">{orderSummary.totalOrders}</strong>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-400 font-semibold">Total Spent</span>
-                      <strong className="text-slate-800 font-extrabold font-mono">₹{FALLBACK_ORDER_SUMMARY.totalSpent}</strong>
+                      <strong className="text-slate-800 font-extrabold font-mono">₹{orderSummary.totalSpent}</strong>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-400 font-semibold">Savings</span>
-                      <strong className="text-green-600 font-extrabold font-mono">₹{FALLBACK_ORDER_SUMMARY.savings}</strong>
+                      <strong className="text-green-600 font-extrabold font-mono">₹{orderSummary.savings}</strong>
                     </div>
                   </div>
 
@@ -376,6 +501,7 @@ export default function History({ setActiveTab }) {
         isOpen={isPauseModalOpen}
         onClose={() => setIsPauseModalOpen(false)}
         onPauseSuccess={() => {}}
+        activeSubscriptionId={membershipsData?.active?._id}
       />
 
       <Footer setActiveTab={setActiveTab} />

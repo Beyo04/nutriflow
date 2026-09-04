@@ -314,12 +314,26 @@ const itemVariants = {
   }
 }
 
-const HomePlan = ({ plans: plansProp }) => {
+const HomePlan = ({ plans: plansProp, setActiveTab, onOpenOTP }) => {
   const [mealType, setMealType] = useState("veg")
   const [selectedGoal, setSelectedGoal] = useState("Balanced Diet")
   const [failedImages, setFailedImages] = useState({})
 
   const activePlans = plansProp && plansProp.length > 0 ? plansProp : FALLBACK_PLANS
+
+  // Same auth guard as Membership.jsx — check token, show OTP if missing
+  const handleSelectPlan = () => {
+    const token =
+      localStorage.getItem('nutriflow_token') ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('auth_token')
+    if (!token) {
+      onOpenOTP?.()
+      // After OTP modal closes the user will be on Home; they can click again to proceed
+      return
+    }
+    setActiveTab?.('Membership')
+  }
 
   const handleImageError = (key) => {
     setFailedImages((prev) => ({ ...prev, [key]: true }))
@@ -543,15 +557,16 @@ const HomePlan = ({ plans: plansProp }) => {
                   ))}
                 </ul>
               </div>
-              <motion.a
-                href="#plan"
+              <motion.button
+                type="button"
+                onClick={handleSelectPlan}
                 whileHover={{ y: -2, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-slate-900 text-white hover:bg-slate-800 shadow-sm cursor-pointer ${springTransition}`}
               >
                 <span>Get Standard</span>
                 <ArrowRight className="w-4 h-4" />
-              </motion.a>
+              </motion.button>
             </motion.div>
 
             {/* PREMIUM */}
@@ -613,15 +628,16 @@ const HomePlan = ({ plans: plansProp }) => {
                   ))}
                 </ul>
               </div>
-              <motion.a
-                href="#plan"
+              <motion.button
+                type="button"
+                onClick={handleSelectPlan}
                 whileHover={{ y: -2, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-[#1F4D2C] text-white hover:bg-[#163d23] shadow-sm cursor-pointer ${springTransition}`}
               >
                 <span>Get Premium</span>
                 <ArrowRight className="w-4 h-4" />
-              </motion.a>
+              </motion.button>
             </motion.div>
           </motion.div>
 

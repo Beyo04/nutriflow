@@ -40,9 +40,9 @@ const marqueeVariants = {
   },
 }
 
-// Reusable floating animation configs
+// Reusable floating animation configs with transform-gpu
 const floatSlow = {
-  y: [-16, 0, -16],
+  y: [-12, 0, -12],
   transition: {
     y: {
       duration: 6,
@@ -53,20 +53,16 @@ const floatSlow = {
 }
 
 const floatFast = {
-  y: [-8, 0, -8],
-  x: [0, 4, 0],
+  y: [-6, 0, -6],
   transition: {
     y: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-    x: { duration: 5, repeat: Infinity, ease: "easeInOut" },
   },
 }
 
 const floatMedium = {
-  y: [-12, 0, -12],
-  x: [0, -6, 0],
+  y: [-8, 0, -8],
   transition: {
     y: { duration: 7, repeat: Infinity, ease: "easeInOut" },
-    x: { duration: 7, repeat: Infinity, ease: "easeInOut" },
   },
 }
 
@@ -100,7 +96,7 @@ const Hero = () => {
       {/* === Main Hero Content (This part fades on scroll) === */}
       <motion.div
         style={{ y: smoothY, opacity: smoothOpacity }}
-        className="flex-1  items-start max-w-7xl mx-auto w-full relative z-20 grid grid-cols-1 lg:grid-cols-12 gap-16 px-6 pt-16 pb-8 md:pt-24 md:pb-12 "
+        className="flex-1  items-start max-w-7xl mx-auto w-full relative z-20 grid grid-cols-1 lg:grid-cols-12 gap-16 px-6 pt-16 pb-8 md:pt-24 md:pb-12 transform-gpu"
       >
         {/* Left Text Column */}
         <div className="lg:col-span-7 flex flex-col items-start text-left">
