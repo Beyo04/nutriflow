@@ -415,7 +415,7 @@ export default function Membership({
           setPlans(res.data.data)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
 
     return () => { cancelled = true; };
   }, [selectedGoal])
@@ -508,7 +508,7 @@ export default function Membership({
           setAlternativesList(res.data.data.alternatives)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }
 
   const selectAlternativeDish = (dish) => {
@@ -582,7 +582,7 @@ export default function Membership({
         let geoRes = null
         try {
           geoRes = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${addressQuery}`, { timeout: 3000 })
-        } catch (geoErr) {}
+        } catch (geoErr) { }
         if (geoRes && geoRes.data && geoRes.data.length > 0) {
           const parsedLat = parseFloat(geoRes.data[0].lat)
           const parsedLng = parseFloat(geoRes.data[0].lon)
@@ -603,7 +603,7 @@ export default function Membership({
       let res = null
       try {
         res = await api.get(`/orders/delivery-check?lat=${lat}&lng=${lng}`, { timeout: 3000 })
-      } catch (apiErr) {}
+      } catch (apiErr) { }
       if (res && res.data && res.data.data) {
         const data = res.data.data
         const distanceKm = data.distanceKm
@@ -645,13 +645,13 @@ export default function Membership({
     if (step !== 3) { setIsCheckingDelivery(false) }
   }, [step, shippingForm.pincode, shippingForm.area, selectedTier])
 
-const checkHasFallbackData = () => {
-  if (activePlan?.isFallbackData) return true
-  const usedDishes = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
-    day => swappedDishes[day] || weeklyMenu.find(m => m.day === day)?.dish
-  )
-  return usedDishes.some(d => d?.isFallbackData)
-}
+  const checkHasFallbackData = () => {
+    if (activePlan?.isFallbackData) return true
+    const usedDishes = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
+      day => swappedDishes[day] || weeklyMenu.find(m => m.day === day)?.dish
+    )
+    return usedDishes.some(d => d?.isFallbackData)
+  }
   // Transition to Step 3 with Auth Guard
   const handleProceedToStep3 = () => {
     if (!activePlan) {
@@ -879,9 +879,9 @@ const checkHasFallbackData = () => {
                   gatewayOrderId,
                   paymentMethod: paymentMethod === "Card" ? "Credit Card" : "UPI"
                 }, { timeout: 5000 })
-              } catch (verifyErr) {}
+              } catch (verifyErr) { }
             }
-          } catch (payErr) {}
+          } catch (payErr) { }
 
           setCheckoutSuccess(true)
           const billing = calculateBilling()
@@ -971,10 +971,15 @@ const checkHasFallbackData = () => {
     }
     const img = dishOrName.image
     if (img && img.trim() !== '') {
-      // Case 1: Absolute URL — extract just the pathname so it works at any host
+      // Case 1: Absolute URL — only strip to a local pathname if it points at OUR OWN origin.
+      // Genuine external URLs (Cloudinary, S3, etc.) must be used as-is.
       if (img.startsWith('http://') || img.startsWith('https://')) {
         try {
-          return new URL(img).pathname   // e.g. "/Herb%20Grilled%20Chicken%20Sandwich.png"
+          const parsed = new URL(img)
+          if (typeof window !== 'undefined' && parsed.origin === window.location.origin) {
+            return parsed.pathname
+          }
+          return img   // external URL — use directly
         } catch {
           // Malformed URL — fall through to name fallback
         }
@@ -2020,8 +2025,8 @@ const checkHasFallbackData = () => {
                           type="button"
                           onClick={() => setShippingForm(prev => ({ ...prev, deliverySlot: slot }))}
                           className={`py-3 px-4 rounded-full text-xs font-bold transition-all cursor-pointer text-center ${isSelected
-                              ? "bg-[#0B7A33] text-white shadow-md"
-                              : "bg-[#EDF8EF] text-[#0B7A33] hover:bg-[#D7E9D7]"
+                            ? "bg-[#0B7A33] text-white shadow-md"
+                            : "bg-[#EDF8EF] text-[#0B7A33] hover:bg-[#D7E9D7]"
                             }`}
                         >
                           {slot}
@@ -2152,8 +2157,8 @@ const checkHasFallbackData = () => {
                       onClick={handleNextToPayment}
                       disabled={!!deliveryError}
                       className={`w-full py-3.5 rounded-full text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 ${deliveryError
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-                          : "bg-[#0B7A33] hover:bg-[#075322] text-white hover:shadow-xl cursor-pointer"
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+                        : "bg-[#0B7A33] hover:bg-[#075322] text-white hover:shadow-xl cursor-pointer"
                         }`}
                     >
                       <span>Continue to Payment</span>
