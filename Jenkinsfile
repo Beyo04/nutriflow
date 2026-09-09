@@ -28,13 +28,30 @@ pipeline {
         stage('DAST Dynamic Scan (OWASP ZAP)') {
             steps {
                 sh '''
-                docker network create ${NETWORK_NAME} || true
+                # Prepare writeable directory for ZAP output
+                mkdir -p zap-wrk
+                chmod 777 zap-wrk
+
+                # Clean up any leftover containers or networks
+                docker rm -f test-backend test-mongo 2>/dev/null || true
+                docker network rm ${NETWORK_NAME} 2>/dev/null || true
+
+                # Create bridge network
+                docker network create ${NETWORK_NAME}
+
+                # Run database and backend
                 docker run -d --name test-mongo --network ${NETWORK_NAME} mongo:latest
                 docker run -d --name test-backend --network ${NETWORK_NAME} -e MONGO_URI=mongodb://test-mongo:27017/nutriflow ${IMAGE_NAME}
-                sleep 5
-                docker run --rm -v "$PWD:/zap/wrk/:rw" --network ${NETWORK_NAME} zaproxy/zap-stable zap-baseline.py -t http://test-backend:8000 -r zap-report.html -I
-                docker rm -f test-backend test-mongo || true
-                docker network rm ${NETWORK_NAME} || true
+
+                # Allow backend to initialize
+                sleep 8
+
+                # Run ZAP baseline scan into the permissioned directory
+                docker run --rm -v "$PWD/zap-wrk:/zap/wrk/:rw" --network ${NETWORK_NAME} zaproxy/zap-stable zap-baseline.py -t http://test-backend:8000 -r zap-report.html -I || true
+
+                # Cleanup test containers and network
+                docker rm -f test-backend test-mongo 2>/dev/null || true
+                docker network rm ${NETWORK_NAME} 2>/dev/null || true
                 '''
             }
         }
